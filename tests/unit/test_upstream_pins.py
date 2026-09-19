@@ -1,5 +1,5 @@
-from pathlib import Path
 import tomllib
+from pathlib import Path
 
 from scripts.install_integrations import BLENDER, GODOT
 
