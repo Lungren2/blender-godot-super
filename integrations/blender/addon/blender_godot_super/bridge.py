@@ -152,7 +152,9 @@ def _drain_requests() -> float:
                     "code": "method_not_found",
                     "message": f"Unsupported bridge method: {pending.method}",
                 }
-        except Exception as exc:  # Blender errors need to cross the process boundary.
+        except Exception as exc:  # noqa: BLE001
+            # This is the process boundary: arbitrary Blender API failures must be
+            # serialized back to the MCP process instead of killing the timer.
             pending.error = {
                 "code": "host_error",
                 "message": f"{type(exc).__name__}: {exc}",

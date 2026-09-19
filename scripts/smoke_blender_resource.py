@@ -19,7 +19,7 @@ async def run() -> None:
         content = result.contents[0]
         text = getattr(content, "text", None)
         if not isinstance(text, str):
-            raise RuntimeError("blender://scene did not return text JSON")
+            raise TypeError("blender://scene did not return text JSON")
 
         print(json.dumps(json.loads(text), indent=2))
 
