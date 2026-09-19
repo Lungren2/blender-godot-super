@@ -43,7 +43,7 @@ def _download_archive(spec: UpstreamIntegration) -> bytes:
         headers={"User-Agent": "blender-godot-super/0.0.0"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
-        return response.read()
+        return bytes(response.read())
 
 
 def _install_from_archive(
