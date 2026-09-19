@@ -56,8 +56,8 @@ def build_godot_server() -> FastMCP:
     config_module = importlib.import_module("mcp_server.config")
     server_module = importlib.import_module("mcp_server.server")
 
-    server_config_type = getattr(config_module, "ServerConfig")
-    create_server = cast(Callable[..., FastMCP], getattr(server_module, "create_server"))
+    server_config_type = vars(config_module)["ServerConfig"]
+    create_server = cast(Callable[..., FastMCP], vars(server_module)["create_server"])
     return create_server(config=server_config_type.from_env())
 
 
@@ -69,8 +69,12 @@ def compose_servers(blender: FastMCP, godot: FastMCP) -> FastMCP:
         instructions=(
             "One MCP endpoint for Blender and Godot. Keep engine-native names and "
             "resources: blender_* / blender:// for Blender and godot_* / godot:// "
-            "for Godot. Inspect before mutating and verify changes with engine-native "
-            "resources or visual/runtime evidence."
+            "for Godot. For Blender, inspect first with blender://scene or "
+            "blender_get_scene, use blender_checkpoint before risky edits, and verify "
+            "with blender_screenshot or blender_render. For Godot, call "
+            "godot_get_server_info and godot_list_toolsets first, enable required "
+            "toolsets before calling hidden tools, and prefer godot:// resources for "
+            "read-only state."
         ),
     )
     server.mount(blender)
