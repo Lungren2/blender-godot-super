@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 from collections.abc import Callable
 from typing import cast
@@ -41,6 +42,7 @@ def build_blender_proxy() -> FastMCP:
     transport = StdioTransport(
         command=sys.executable,
         args=["-m", "claude_blender_mcp.server"],
+        env=dict(os.environ),
         keep_alive=True,
     )
     return create_proxy(transport, name="Blender upstream")

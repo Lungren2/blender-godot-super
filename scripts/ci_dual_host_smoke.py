@@ -16,6 +16,7 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.exceptions import ResourceError
+from mcp.shared.exceptions import MCPError
 
 from super_mcp.installations import BLENDER, GODOT, install
 
@@ -124,7 +125,7 @@ async def _wait_for_live_resources(
                 _read_json_resource(client, "blender://scene"),
                 _read_json_resource(client, "godot://project/info"),
             )
-        except (ResourceError, RuntimeError, TypeError, ValueError) as exc:
+        except (MCPError, ResourceError, RuntimeError, TypeError, ValueError) as exc:
             last_error = repr(exc)
             await asyncio.sleep(POLL_INTERVAL_SECONDS)
             continue
