@@ -71,3 +71,94 @@ jobs:
       - name: Exercise real Blender bridge and MCP resource
         run: |
           uv run python scripts/ci_blender_smoke.py             --blender ".cache/blender/blender-$BLENDER_VERSION-linux-x64/blender"             --external-fixture .cache/blender/color_vortex.blend
+
+
+  dual-host-integration:
+    needs: [python, blender-integration]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BLENDER_VERSION: "4.5.14"
+      BLENDER_ARCHIVE: blender-4.5.14-linux-x64.tar.xz
+      GODOT_VERSION: "4.7.2"
+      GODOT_ARCHIVE: Godot_v4.7.2-stable_linux.x86_64.zip
+      GODOT_SHA256: cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --dev
+
+      - name: Ensure Xvfb
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+
+      - name: Cache Blender
+        uses: actions/cache@v4
+        with:
+          path: .cache/blender
+          key: blender-linux-x64-${{ env.BLENDER_VERSION }}
+
+      - name: Install pinned Blender
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/blender
+          cd .cache/blender
+
+          if [ ! -f "$BLENDER_ARCHIVE" ]; then
+            curl --fail --location --retry 3 \
+              --output "$BLENDER_ARCHIVE" \
+              "https://download.blender.org/release/Blender4.5/$BLENDER_ARCHIVE"
+          fi
+
+          curl --fail --location --retry 3 \
+            --output "blender-$BLENDER_VERSION.sha256" \
+            "https://download.blender.org/release/Blender4.5/blender-$BLENDER_VERSION.sha256"
+
+          grep " $BLENDER_ARCHIVE$" "blender-$BLENDER_VERSION.sha256" | sha256sum --check -
+
+          if [ ! -x "blender-$BLENDER_VERSION-linux-x64/blender" ]; then
+            tar -xJf "$BLENDER_ARCHIVE"
+          fi
+
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: .cache/godot
+          key: godot-linux-x86_64-${{ env.GODOT_VERSION }}
+
+      - name: Install pinned Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/godot
+          cd .cache/godot
+
+          if [ ! -f "$GODOT_ARCHIVE" ]; then
+            curl --fail --location --retry 3 \
+              --output "$GODOT_ARCHIVE" \
+              "https://github.com/godotengine/godot-builds/releases/download/$GODOT_VERSION-stable/$GODOT_ARCHIVE"
+          fi
+
+          echo "$GODOT_SHA256  $GODOT_ARCHIVE" | sha256sum --check -
+
+          if [ ! -x "Godot_v$GODOT_VERSION-stable_linux.x86_64" ]; then
+            unzip -q -o "$GODOT_ARCHIVE"
+            chmod +x "Godot_v$GODOT_VERSION-stable_linux.x86_64"
+          fi
+
+      - name: Exercise live Blender and Godot through one MCP
+        run: |
+          uv run python scripts/ci_dual_host_smoke.py \
+            --blender ".cache/blender/blender-$BLENDER_VERSION-linux-x64/blender" \
+            --godot ".cache/godot/Godot_v$GODOT_VERSION-stable_linux.x86_64"
