@@ -23,7 +23,7 @@ The full upstream MIT license is preserved in
 - Pinned revision: `5087d87212e0acf3225307c2b3512659c425cc5e`
 - License: MIT
 - Copyright: Copyright (c) 2024 Claude Code
-- Local use: the SDK-v2 MCP server is proxied over stdio by the unified FastMCP server.
+- Local use: the SDK-v2 MCP server is proxied over stdio by the unified FastMCP server.\n  The matching Blender add-on is copied from the same pinned GitHub archive by\n  `scripts/install_integrations.py`.
 
 The full upstream MIT license is preserved in
 `licenses/minihellboy-claude-blender-MIT.txt`.
