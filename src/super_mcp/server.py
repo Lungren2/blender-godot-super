@@ -41,6 +41,7 @@ def build_blender_proxy() -> FastMCP:
     transport = StdioTransport(
         command=sys.executable,
         args=["-m", "claude_blender_mcp.server"],
+        keep_alive=True,
     )
     return create_proxy(transport, name="Blender upstream")
 

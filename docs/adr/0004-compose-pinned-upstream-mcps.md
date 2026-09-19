@@ -33,12 +33,11 @@ The Godot server must stay in-process for the MVP. Its enabled toolsets are expl
 server-global application state under MCP 2026-07-28. Restarting the child server for
 every request would reset that state.
 
-The Blender proxy may use short-lived stdio backend sessions for the first MVP because
-durable editor state lives in Blender. One Minihellboy feature is process-local:
-`blender://render/latest` remembers the last capture in the MCP process. That resource
-will not be reliable across fresh proxy backend processes. A later change should either
-adapt the Minihellboy registration layer to FastMCP in-process or provide a deliberately
-persistent Blender child process.
+The Blender proxy uses FastMCP's stdio transport with `keep_alive=True`. FastMCP 4.0.1
+clones proxy clients while reusing the transport, so the upstream Blender MCP process
+stays alive across ordinary calls for the lifetime of the parent. This preserves
+process-local upstream state such as `blender://render/latest`. If the child exits,
+the transport can reconnect it and that process-local state starts fresh.
 
 ## Provenance
 

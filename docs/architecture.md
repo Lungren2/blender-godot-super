@@ -53,10 +53,11 @@ scene/object/node ontology.
 Godot is mounted in-process. HybridIndie's MCP keeps enabled toolsets as explicit
 server-global application state, so its server must survive across calls.
 
-Blender is proxied through its SDK-v2 stdio server for the MVP. Most durable state lives
-inside Blender itself. The upstream `blender://render/latest` resource is the known
-exception because its last-render path is process-local to the Blender MCP child. A
-persistent child or in-process registration adapter can replace the proxy later.
+Blender is proxied through its SDK-v2 stdio server with `keep_alive=True`. FastMCP
+reuses that transport across ordinary proxy requests, so the child MCP process and its
+process-local state survive for the parent lifetime. If the subprocess dies, the
+transport may reconnect it; Blender editor state remains in Blender while child-local
+state starts fresh.
 
 ## Installation boundary
 

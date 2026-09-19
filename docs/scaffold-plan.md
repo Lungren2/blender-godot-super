@@ -50,7 +50,7 @@ Do not introduce shared scene semantics during this step.
 
 After the dual-host smoke:
 
-- replace the short-lived Blender proxy if process-local state becomes material;
+- test Blender child-process restart and recovery semantics;
 - add parent-level host/version diagnostics;
 - lock dependency resolution for reproducible installs;
 - add explicit upstream refresh tooling and provenance checks;

@@ -87,6 +87,6 @@ The repository's earlier narrow Blender observation bridge remains as an integra
 
 See `THIRD_PARTY_NOTICES.md` and `licenses/` for upstream revisions and full MIT notices. The GPLv3 `CallMeJones/blender-agent-bridge` project is used only as a design reference; its implementation is not copied here.
 
-## Known MVP limitation
+## Process lifetime
 
-Minihellboy's `blender://render/latest` resource stores its last capture path in the Blender MCP process. The current Blender proxy may create a fresh backend process for a later request, so that one resource is not reliable yet. Render and screenshot tools still return their visual result directly, and Blender editor state remains in Blender.
+The Blender stdio transport is explicitly kept alive for the lifetime of the parent process. That preserves Minihellboy's MCP-process state, including `blender://render/latest`, across ordinary calls through the unified server. If the child process exits, FastMCP reconnects it and process-local state starts fresh.
