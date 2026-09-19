@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import importlib
 import sys
+from collections.abc import Callable
+from typing import cast
 
 from fastmcp import FastMCP
 from fastmcp.client.transports import StdioTransport
@@ -46,13 +49,16 @@ def build_godot_server() -> FastMCP:
     """Build the pinned hybridindie Godot MCP in-process.
 
     In-process composition preserves its server-global toolset gating and bridge
-    lifecycle across MCP requests.
+    lifecycle across MCP requests. Dynamic loading keeps this repository's strict
+    typing boundary independent of the upstream package's missing PEP 561 marker.
     """
 
-    from mcp_server.config import ServerConfig
-    from mcp_server.server import create_server
+    config_module = importlib.import_module("mcp_server.config")
+    server_module = importlib.import_module("mcp_server.server")
 
-    return create_server(config=ServerConfig.from_env())
+    server_config_type = getattr(config_module, "ServerConfig")
+    create_server = cast(Callable[..., FastMCP], getattr(server_module, "create_server"))
+    return create_server(config=server_config_type.from_env())
 
 
 def compose_servers(blender: FastMCP, godot: FastMCP) -> FastMCP:
