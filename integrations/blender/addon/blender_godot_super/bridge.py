@@ -31,11 +31,6 @@ class PendingRequest:
     error: dict[str, str] | None = None
 
 
-_requests: queue.Queue[PendingRequest] = queue.Queue()
-_server: _BridgeServer | None = None
-_server_thread: threading.Thread | None = None
-
-
 class _BridgeServer(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
@@ -88,15 +83,25 @@ class _BridgeRequestHandler(socketserver.StreamRequestHandler):
                 "result": pending.result or {},
             }
 
-        self.wfile.write((json.dumps(response, separators=(",", ":")) + "\n").encode("utf-8"))
+        self._write_response(response)
 
     def _write_error(self, request_id: str, code: str, message: str) -> None:
-        response = {
-            "id": request_id,
-            "ok": False,
-            "error": {"code": code, "message": message},
-        }
-        self.wfile.write((json.dumps(response, separators=(",", ":")) + "\n").encode("utf-8"))
+        self._write_response(
+            {
+                "id": request_id,
+                "ok": False,
+                "error": {"code": code, "message": message},
+            }
+        )
+
+    def _write_response(self, response: dict[str, Any]) -> None:
+        payload = (json.dumps(response, separators=(",", ":")) + "\n").encode("utf-8")
+        self.wfile.write(payload)
+
+
+_requests: queue.Queue[PendingRequest] = queue.Queue()
+_server: _BridgeServer | None = None
+_server_thread: threading.Thread | None = None
 
 
 def _inspect_scene() -> dict[str, Any]:

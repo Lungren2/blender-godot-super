@@ -22,7 +22,8 @@ def build_server(scene_reader: BlenderSceneReader | None = None) -> MCPServer:
             "surface is the Blender scene resource."
         ),
     )
-    register_blender_resources(server, scene_reader or BlenderBridgeClient())
+    resolved_reader = scene_reader if scene_reader is not None else BlenderBridgeClient()
+    register_blender_resources(server, resolved_reader)
     return server
 
 
