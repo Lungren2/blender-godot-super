@@ -1,136 +1,83 @@
-# Scaffold plan
+# MVP and follow-on plan
 
-The repository starts with architecture boundaries before capability breadth, but shared contracts are learned from real host behavior rather than invented against a fake implementation.
+The project now favors upstream composition over rebuilding mature Blender and Godot MCP
+implementations.
 
-## Phase 0 — repository scaffold
+## MVP composition
 
-Complete:
+Current implementation:
 
-- establish Python package and development-tool baseline;
-- separate shared MCP core from in-engine integrations;
-- reserve resource, prompt, evidence, transport, and host boundaries;
-- add host plugin skeletons;
-- document the intended model-facing surface.
+1. pin `minihellboy/claude-blender` and `hybridindie/godot-mcp` to immutable Git
+   revisions;
+2. mount HybridIndie's FastMCP Godot server in-process;
+3. proxy Minihellboy's SDK-v2 Blender server over stdio;
+4. expose both engine-native tool/resource surfaces through one FastMCP parent;
+5. install the matching editor add-ons from the same pinned revisions;
+6. preserve full MIT notices and revision provenance;
+7. retain the repository-owned Blender observation slice as an independent real-host
+   regression test.
 
-## Phase 1A — Blender observation slice
+Exit condition: one MCP client can list both engine families through
+`blender-godot-super`, and the corresponding editor add-ons can connect to their real
+hosts.
 
-Build the smallest real end-to-end path first:
+## MVP verification
 
-1. a current MCP server starts on the Python SDK v2 line;
-2. it advertises a read-oriented `blender://scene` resource;
-3. the server connects only to a loopback Blender bridge;
-4. bridge I/O remains off the Blender API thread;
-5. a Blender application timer drains queued work on the main thread;
-6. the add-on inspects the active scene through `bpy`;
-7. the resource returns structured scene state to the MCP client;
-8. bridge-unavailable and malformed-response failures remain distinguishable.
+The composition contract must prove at least:
 
-The first resource should report only useful facts that Blender can provide directly, such as:
+- `blender_ping` is visible;
+- `godot_get_server_info` is visible;
+- `blender://scene` is visible;
+- `godot://project/info` is visible;
+- mounted child names are not accidentally prefixed or rewritten;
+- the pinned add-on installer extracts only the requested upstream subtree.
 
-- Blender version;
-- current blend-file/document identity;
-- scene name;
-- object names and types;
-- active object;
-- camera.
+Live host verification remains engine-specific.
 
-No mutation belongs in this slice.
+## Next: real dual-host smoke
 
-Exit condition: with Blender running and the add-on enabled, an MCP client can read `blender://scene` and receive state originating from the actual open Blender document.
+Run Blender and Godot against the same parent MCP and prove:
 
-## Phase 1B — Godot observation slice
+- Blender scene observation comes from the open blend file;
+- Godot project/scene observation comes from the open editor;
+- one client can alternate between both without restarting the parent;
+- Godot toolset enabling persists across calls;
+- host disconnects remain attributable to the correct engine.
 
-Repeat the same infrastructural exercise against the real Godot editor.
+Do not introduce shared scene semantics during this step.
 
-Prefer a Godot-specific resource such as `godot://scene` rather than forcing it through a shared scene schema.
+## Then: harden the composition seam
 
-Capture facts the Godot editor naturally exposes, such as:
+After the dual-host smoke:
 
-- Godot version;
-- project identity;
-- edited scene path;
-- root node;
-- node names/types;
-- editor selection.
+- replace the short-lived Blender proxy if process-local state becomes material;
+- add parent-level host/version diagnostics;
+- lock dependency resolution for reproducible installs;
+- add explicit upstream refresh tooling and provenance checks;
+- validate install behavior on supported operating systems.
 
-Exit condition: an MCP client can read the resource and receive state originating from the actual editor.
+## Then: workflows and evidence
 
-## Phase 1C — compare and extract contracts
+Reuse donor capabilities to prove real workflows before inventing new abstractions:
 
-Only after both real hosts work:
+- Blender inspect -> mutate -> render/screenshot -> evaluate;
+- Godot inspect -> mutate -> undo/redo -> viewport/runtime verification;
+- cross-host workflows only where a user task genuinely spans both applications.
 
-- compare connection lifecycle and host identity;
-- compare resource addressing and state freshness;
-- compare structured error requirements;
-- compare cancellation/timeout behavior;
-- identify genuinely shared transport and routing contracts;
-- identify concepts that must remain host-specific.
+Artifact/evidence contracts should be extracted from those real outputs.
 
-Then introduce interfaces for the common boundary.
+## Later: capability-surface scaling
 
-A fake host is added here as a deterministic implementation of the learned contract for tests.
+Only introduce another application-level discovery gateway if measurements show the
+combined tool surface harms context use or tool selection.
 
-## Phase 2 — observation and evidence
+Godot already has gated toolsets. Blender currently has a moderate direct surface. Keep
+those mechanisms until there is evidence they are insufficient.
 
-Expand perception before mutation.
+## Non-goals for the MVP
 
-Add resources or artifacts for:
-
-- scene/object/node inspection;
-- diagnostics;
-- Blender render or viewport capture;
-- Godot viewport capture;
-- runtime/engine output where available.
-
-Do not introduce a universal evidence hierarchy until multiple real artifact types demonstrate the need. Start with small typed artifact references containing URI, media type, provenance, and role.
-
-## Phase 3 — first reversible mutation loops
-
-Choose a tiny set of reversible capabilities per engine.
-
-Each capability must prove:
-
-- validated input;
-- explicit side-effect/safety metadata;
-- mutation through the host's native editor model;
-- undo or explicit non-undoable status;
-- post-mutation observation or artifact capture.
-
-Godot editor mutations should use `EditorUndoRedoManager` where representable. Blender mutations must preserve editor-safe main-thread execution and establish an undo strategy before breadth expands.
-
-## Phase 4 — workflows and prompts
-
-Encode repeated procedures above proven primitives:
-
-- inspect scene;
-- edit and visually verify;
-- diagnose runtime/editor errors;
-- create a bounded asset or scene;
-- compare before/after artifacts.
-
-Prompts orchestrate existing primitives. They must not become hidden alternate APIs.
-
-## Phase 5 — capability discovery
-
-Evaluate whether the growing operation surface warrants an application-level discovery gateway.
-
-If measurements show that a large static MCP tool surface harms context use or selection quality, introduce catalog search, schema lookup, and generic invocation deliberately.
-
-Keep this separate from MCP protocol discovery such as `server/discover`.
-
-## Phase 6 — capability expansion
-
-Only now expand breadth.
-
-Prefer engine-native semantics unless a shared abstraction has demonstrated equivalent meaning in both hosts.
-
-## Validation layers
-
-```text
-unit          pure serialization, routing, and helper behavior
-contract      MCP-visible resources/tools and structured failure guarantees
-integration   real Blender/Godot bridge behavior
-smoke         packaged client -> MCP -> host -> real host state
-```
-
-CI covers unit and contract tests that can run headlessly. Real GUI-host integration belongs in explicit jobs once deterministic runners exist.
+- universal Blender/Godot scene ontology;
+- generic HostAdapter dispatcher;
+- copied GPLv3 Blender Agent Bridge implementation;
+- arbitrary cross-engine capability translation;
+- replacing donor undo/safety models with a new shared model.

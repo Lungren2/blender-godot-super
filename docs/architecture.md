@@ -1,98 +1,107 @@
 # Architecture
 
-## System boundary
+## Current MVP boundary
 
-`blender-godot-super` is one MCP server with two host integrations.
+`blender-godot-super` is one MCP endpoint composed from two pinned upstream engine
+servers.
 
 ```text
 agent / MCP client
         |
         v
 +---------------------------+
-| shared MCP surface        |
-| discovery / resources     |
-| prompts / evidence        |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| canonical capability      |
-| contracts + routing       |
+| blender-godot-super       |
+| FastMCP 4 parent          |
 +-------------+-------------+
               |
        +------+------+
        |             |
        v             v
-   Blender host   Godot host
-   adapter/bridge adapter/bridge
+ Blender MCP      Godot MCP
+ stdio proxy      in-process mount
+       |             |
+       v             v
+ Blender add-on   Godot plug-in
+       |             |
+       v             v
+     bpy          Editor API
 ```
 
-The engine adapters implement capabilities. They do not define the public agent interface independently.
+The Blender runtime comes from `minihellboy/claude-blender`. The Godot runtime comes
+from `hybridindie/godot-mcp`. Exact revisions and licenses are recorded in
+`THIRD_PARTY_NOTICES.md` and pinned in `pyproject.toml`.
 
-## Model-facing surface
-
-The default surface should stay small even as host capability count grows.
-
-Initial target shape:
-
-1. **status** — server and host availability, versions, active project/document.
-2. **catalog search** — semantic or filtered discovery of capabilities.
-3. **schema lookup** — canonical contract, safety class, side effects, evidence expectations.
-4. **invoke** — execute one capability using a validated canonical request.
-5. **evidence** — obtain or inspect verification artifacts when they are not already returned inline.
-
-This is a design target, not a commitment to exact tool names.
-
-The catalog can contain hundreds of host capabilities without advertising hundreds of MCP tools at once.
+The parent owns composition and cross-host guidance. It does not redefine the donors'
+engine semantics.
 
 ## MCP primitive ownership
 
-Use the protocol primitives deliberately:
+Preserve the engine-native MCP surfaces unless a cross-host abstraction has demonstrated
+value:
 
-- **Tools** perform bounded operations.
-- **Resources** expose addressable, read-oriented host/project state and evidence.
-- **Prompts** encode reusable procedures such as inspect → mutate → verify.
-- **Structured results** carry machine-readable outcomes and references to evidence.
+- Blender tools retain `blender_*` names and Blender resources retain `blender://` URIs.
+- Godot tools retain `godot_*` names and Godot resources retain `godot://` URIs.
+- Read-oriented state should remain resources where the donor already models it that way.
+- Mutations retain the donor's native safety and undo behavior.
+- Prompts remain reusable procedures rather than hidden alternate APIs.
 
-Do not turn every readable value into a tool.
+Unified means one client connection and one installation path. It does not imply a shared
+scene/object/node ontology.
 
-## Capability contract
+## Child lifecycle
 
-A canonical capability should eventually describe at least:
+Godot is mounted in-process. HybridIndie's MCP keeps enabled toolsets as explicit
+server-global application state, so its server must survive across calls.
 
-- stable capability id and host;
-- summary and search metadata;
-- typed input/output schema;
-- mutability and safety class;
-- preview/dry-run support;
-- undo semantics;
-- editor/runtime preconditions;
-- timeout/cancellation behavior;
-- expected evidence;
-- version/feature requirements;
-- resource references produced or consumed.
+Blender is proxied through its SDK-v2 stdio server for the MVP. Most durable state lives
+inside Blender itself. The upstream `blender://render/latest` resource is the known
+exception because its last-render path is process-local to the Blender MCP child. A
+persistent child or in-process registration adapter can replace the proxy later.
 
-The contract is the source of truth. Host code implements it.
+## Installation boundary
 
-## Mutation lifecycle
+The Python packages are installed directly from immutable Git revisions.
+
+The matching editor add-ons are copied from immutable GitHub archives by
+`scripts/install_integrations.py`. The installer copies the upstream subdirectories
+without reimplementing them.
+
+This keeps attribution and refreshes mechanical while avoiding a second maintained copy of
+large upstream source trees.
+
+## Shared infrastructure
+
+Shared infrastructure should be introduced only where both real hosts need it. Likely
+candidates include:
+
+- parent-level host status and diagnostics;
+- explicit host/document/project identities;
+- artifact references and provenance;
+- cross-host workflow prompts;
+- common installation and version reporting.
+
+A generic `HostAdapter.invoke(...)`, universal scene vocabulary, or
+search/schema/invoke gateway is not part of the MVP.
+
+## Capability breadth
+
+The donors currently solve breadth differently:
+
+- Godot uses FastMCP toolset gating.
+- Blender exposes a moderate direct tool surface.
+
+Keep those working mechanisms until measurements show the unified surface needs another
+discovery layer. MCP protocol discovery such as `server/discover` remains distinct from
+any future application capability catalog.
+
+## Verification layers
 
 ```text
-inspect state
-  -> discover capability
-  -> inspect contract
-  -> preview when meaningful
-  -> invoke
-  -> capture evidence
-  -> evaluate result
-  -> continue or undo
+unit          composition helpers and installer/archive behavior
+contract      one MCP client sees both upstream surfaces
+integration   live Blender/Godot editor bridges
+smoke         packaged client -> unified MCP -> live host state
 ```
 
-Mutation success is not equivalent to task success. A successful API call without useful evidence is incomplete where visual, runtime, structural, or compiler validation is available.
-
-## Transport boundary
-
-Transport code owns connection lifecycle, request correlation, cancellation/timeouts, serialization, and host liveness. It does not own capability discovery or public schemas.
-
-## Safety
-
-Safety is capability metadata, not prose hidden in tool descriptions. The first contract pass should distinguish read-only, reversible editor mutation, destructive mutation, filesystem/project mutation, and process/network side effects.
+The earlier repository-owned Blender observation bridge remains as a real-host integration
+test while the upstream composition path settles.

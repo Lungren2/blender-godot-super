@@ -43,7 +43,9 @@ persistent Blender child process.
 ## Provenance
 
 The two runtime donors are MIT licensed. Preserve their full license texts and pinned
-revision metadata in this repository.
+revision metadata in this repository. Install the matching editor add-ons by copying their
+source directories from immutable GitHub archives at the same revisions, rather than
+maintaining hand-rewritten local forks.
 
 `CallMeJones/blender-agent-bridge` remains a design reference only because its
 implementation is GPLv3 and this repository is MIT.
