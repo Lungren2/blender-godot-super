@@ -1,86 +1,136 @@
 # Scaffold plan
 
-The repository starts with architecture boundaries before feature breadth.
+The repository starts with architecture boundaries before capability breadth, but shared contracts are learned from real host behavior rather than invented against a fake implementation.
 
 ## Phase 0 — repository scaffold
 
-Current pass:
+Complete:
 
 - establish Python package and development-tool baseline;
 - separate shared MCP core from in-engine integrations;
-- reserve catalog, contract, resource, prompt, evidence, transport, and host boundaries;
+- reserve resource, prompt, evidence, transport, and host boundaries;
 - add host plugin skeletons;
 - document the intended model-facing surface.
 
-No engine capability should be implemented in this phase.
+## Phase 1A — Blender observation slice
 
-## Phase 1 — protocol and contract spine
+Build the smallest real end-to-end path first:
 
-Build the smallest end-to-end vertical slice:
+1. a current MCP server starts on the Python SDK v2 line;
+2. it advertises a read-oriented `blender://scene` resource;
+3. the server connects only to a loopback Blender bridge;
+4. bridge I/O remains off the Blender API thread;
+5. a Blender application timer drains queued work on the main thread;
+6. the add-on inspects the active scene through `bpy`;
+7. the resource returns structured scene state to the MCP client;
+8. bridge-unavailable and malformed-response failures remain distinguishable.
 
-1. MCP server boots on the v2 SDK line.
-2. Server/host status is available.
-3. One canonical capability contract can be registered.
-4. Catalog search can find it.
-5. Schema lookup returns its contract.
-6. Invocation routes through a host adapter.
-7. A structured result can reference evidence/resources.
+The first resource should report only useful facts that Blender can provide directly, such as:
 
-Use a fake host before Blender or Godot so protocol behavior is testable without GUI applications.
+- Blender version;
+- current blend-file/document identity;
+- scene name;
+- object names and types;
+- active object;
+- camera.
 
-Exit condition: contract tests prove discovery → schema → invocation → result using the actual MCP server.
+No mutation belongs in this slice.
 
-## Phase 2 — bridge lifecycle
+Exit condition: with Blender running and the add-on enabled, an MCP client can read `blender://scene` and receive state originating from the actual open Blender document.
 
-Implement host connection semantics independently for Blender and Godot.
+## Phase 1B — Godot observation slice
 
-Shared requirements:
+Repeat the same infrastructural exercise against the real Godot editor.
 
-- explicit host identity and version;
-- project/document identity;
-- request correlation;
-- cancellation and timeout;
-- reconnect behavior;
-- bounded message sizes;
-- clear structured host errors.
+Prefer a Godot-specific resource such as `godot://scene` rather than forcing it through a shared scene schema.
 
-Blender-specific requirement: dispatch `bpy` work safely on Blender's main thread.
+Capture facts the Godot editor naturally exposes, such as:
 
-Godot-specific requirement: editor mutations integrate with `EditorUndoRedoManager` where representable as editor actions.
+- Godot version;
+- project identity;
+- edited scene path;
+- root node;
+- node names/types;
+- editor selection.
 
-Exit condition: a fake capability can cross each real bridge and return a typed result.
+Exit condition: an MCP client can read the resource and receive state originating from the actual editor.
 
-## Phase 3 — observation and evidence
+## Phase 1C — compare and extract contracts
 
-Prioritize perception before broad mutation.
+Only after both real hosts work:
 
-Implement resources/evidence for host/project summary, scene/object/node inspection, diagnostics, Blender render or viewport capture, Godot viewport capture, and runtime/engine output where available.
+- compare connection lifecycle and host identity;
+- compare resource addressing and state freshness;
+- compare structured error requirements;
+- compare cancellation/timeout behavior;
+- identify genuinely shared transport and routing contracts;
+- identify concepts that must remain host-specific.
 
-Exit condition: an agent can inspect a project and receive machine-readable state plus visual evidence without arbitrary code execution.
+Then introduce interfaces for the common boundary.
 
-## Phase 4 — first mutation loops
+A fake host is added here as a deterministic implementation of the learned contract for tests.
 
-Choose a tiny set of reversible capabilities per engine. Each must prove validated input, safety metadata, preview where useful, mutation, undo or explicit non-undoable status, and post-mutation evidence.
+## Phase 2 — observation and evidence
 
-Do not expand breadth until the loop is reliable.
+Expand perception before mutation.
 
-## Phase 5 — workflows/prompts
+Add resources or artifacts for:
 
-Encode repeated procedures above atomic capabilities: inspect scene, edit and visually verify, diagnose runtime/editor error, create a bounded asset/scene, and compare before/after evidence.
+- scene/object/node inspection;
+- diagnostics;
+- Blender render or viewport capture;
+- Godot viewport capture;
+- runtime/engine output where available.
 
-Prompts orchestrate existing capabilities; they must not become hidden alternate APIs.
+Do not introduce a universal evidence hierarchy until multiple real artifact types demonstrate the need. Start with small typed artifact references containing URI, media type, provenance, and role.
+
+## Phase 3 — first reversible mutation loops
+
+Choose a tiny set of reversible capabilities per engine.
+
+Each capability must prove:
+
+- validated input;
+- explicit side-effect/safety metadata;
+- mutation through the host's native editor model;
+- undo or explicit non-undoable status;
+- post-mutation observation or artifact capture.
+
+Godot editor mutations should use `EditorUndoRedoManager` where representable. Blender mutations must preserve editor-safe main-thread execution and establish an undo strategy before breadth expands.
+
+## Phase 4 — workflows and prompts
+
+Encode repeated procedures above proven primitives:
+
+- inspect scene;
+- edit and visually verify;
+- diagnose runtime/editor errors;
+- create a bounded asset or scene;
+- compare before/after artifacts.
+
+Prompts orchestrate existing primitives. They must not become hidden alternate APIs.
+
+## Phase 5 — capability discovery
+
+Evaluate whether the growing operation surface warrants an application-level discovery gateway.
+
+If measurements show that a large static MCP tool surface harms context use or selection quality, introduce catalog search, schema lookup, and generic invocation deliberately.
+
+Keep this separate from MCP protocol discovery such as `server/discover`.
 
 ## Phase 6 — capability expansion
 
-Only now expand the catalog. Prefer canonical domain capabilities over raw engine API mirrors. Add direct specialized MCP tools only when measurements show the discovery gateway is insufficient for a frequent workflow.
+Only now expand breadth.
+
+Prefer engine-native semantics unless a shared abstraction has demonstrated equivalent meaning in both hosts.
 
 ## Validation layers
 
 ```text
-unit          pure contract/catalog/routing behavior
-contract      MCP request/response and schema guarantees
+unit          pure serialization, routing, and helper behavior
+contract      MCP-visible resources/tools and structured failure guarantees
 integration   real Blender/Godot bridge behavior
-smoke         packaged client -> MCP -> host -> evidence loop
+smoke         packaged client -> MCP -> host -> real host state
 ```
 
-CI should cover unit and contract tests by default. GUI-host integration belongs in explicit jobs once deterministic runners exist.
+CI covers unit and contract tests that can run headlessly. Real GUI-host integration belongs in explicit jobs once deterministic runners exist.
