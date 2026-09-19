@@ -3,7 +3,6 @@ from pathlib import Path
 
 from scripts.install_integrations import BLENDER, GODOT
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
