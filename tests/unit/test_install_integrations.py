@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.install_integrations import _install_from_archive
+from super_mcp.installations import _install_from_archive
 
 
 def _archive() -> bytes:
