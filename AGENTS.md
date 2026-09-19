@@ -40,6 +40,12 @@ Do not expose one MCP tool per engine operation by default.
 
 A discovery-first application gateway remains a candidate for later breadth. Do not build it merely because the repository has reserved catalog directories.
 
+## Research record
+
+The raw architecture discussion is preserved verbatim in `docs/research/architecture-debate-transcript.md` and `docs/research/ecosystem-survey-transcript.md`. Read them when revisiting host boundaries, capability discovery, resource/tool ownership, evidence, or tool-surface scaling.
+
+Those transcripts are source material, not settled decisions. ADRs and current implementation state remain authoritative where they diverge.
+
 ## Verification
 
 Use local checks first. CI is terminal verification, not an interactive development shell. Keep commits bounded and coherent.
