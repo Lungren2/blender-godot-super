@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "integrations" / "blender" / "addon"))
 
-from blender_godot_super.bridge import _drain_requests, start_bridge, stop_bridge  # noqa: E402
+from blender_godot_super.bridge import _drain_requests, start_bridge, stop_bridge
 
 RUN_SECONDS = 45.0
 PUMP_INTERVAL_SECONDS = 0.01

@@ -30,7 +30,7 @@ def _args() -> argparse.Namespace:
 
 
 def _run_blender(blender: Path, *args: str) -> None:
-    subprocess.run([str(blender), *args], check=True)  # noqa: S603
+    subprocess.run([str(blender), *args], check=True)
 
 
 def _make_fixture(blender: Path, output: Path) -> None:
@@ -91,7 +91,7 @@ async def _read_scene() -> dict[str, Any]:
 def _inspect_document(blender: Path, document: Path) -> dict[str, Any]:
     with tempfile.NamedTemporaryFile(prefix="super-blender-", suffix=".log") as log:
         log_path = Path(log.name)
-        process = subprocess.Popen(  # noqa: S603
+        process = subprocess.Popen(
             [
                 str(blender),
                 "--background",
