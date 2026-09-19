@@ -1,30 +1,81 @@
-"""MCP composition root."""
+"""Unified MCP composition root."""
 
 from __future__ import annotations
 
+import sys
+
+from fastmcp import FastMCP
+from fastmcp.client.transports import StdioTransport
+from fastmcp.server import create_proxy
 from mcp.server import MCPServer
 
 from super_mcp.hosts.blender import BlenderBridgeClient
 from super_mcp.resources.blender import BlenderSceneReader, register_blender_resources
 
 
-def build_server(scene_reader: BlenderSceneReader | None = None) -> MCPServer:
-    """Build the current MCP server.
+def build_blender_observation_server(
+    scene_reader: BlenderSceneReader | None = None,
+) -> MCPServer:
+    """Build the repository's narrow Blender observation server.
 
-    The dependency is injectable so protocol tests can exercise MCP behavior without
-    pretending a fake host proves the production host contract.
+    This remains available for the existing real-host contract and integration tests.
+    Production uses :func:`build_server`, which composes the upstream Blender and
+    Godot MCP implementations behind one endpoint.
     """
 
     server = MCPServer(
-        "blender-godot-super",
-        instructions=(
-            "Read engine state through MCP resources. The first supported live host "
-            "surface is the Blender scene resource."
-        ),
+        "blender-godot-super-observation",
+        instructions="Read the current Blender scene through blender://scene.",
     )
     resolved_reader = scene_reader if scene_reader is not None else BlenderBridgeClient()
     register_blender_resources(server, resolved_reader)
     return server
+
+
+def build_blender_proxy() -> FastMCP:
+    """Proxy the pinned claude-blender MCP package over stdio."""
+
+    transport = StdioTransport(
+        command=sys.executable,
+        args=["-m", "claude_blender_mcp.server"],
+    )
+    return create_proxy(transport, name="Blender upstream")
+
+
+def build_godot_server() -> FastMCP:
+    """Build the pinned hybridindie Godot MCP in-process.
+
+    In-process composition preserves its server-global toolset gating and bridge
+    lifecycle across MCP requests.
+    """
+
+    from mcp_server.config import ServerConfig
+    from mcp_server.server import create_server
+
+    return create_server(config=ServerConfig.from_env())
+
+
+def compose_servers(blender: FastMCP, godot: FastMCP) -> FastMCP:
+    """Expose Blender and Godot components through one MCP server."""
+
+    server = FastMCP(
+        "blender-godot-super",
+        instructions=(
+            "One MCP endpoint for Blender and Godot. Keep engine-native names and "
+            "resources: blender_* / blender:// for Blender and godot_* / godot:// "
+            "for Godot. Inspect before mutating and verify changes with engine-native "
+            "resources or visual/runtime evidence."
+        ),
+    )
+    server.mount(blender)
+    server.mount(godot)
+    return server
+
+
+def build_server() -> FastMCP:
+    """Build the production unified MCP server from pinned upstream implementations."""
+
+    return compose_servers(build_blender_proxy(), build_godot_server())
 
 
 mcp = build_server()

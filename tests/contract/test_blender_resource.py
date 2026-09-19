@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from mcp import Client
 
-from super_mcp.server import build_server
+from super_mcp.server import build_blender_observation_server
 
 
 class StubSceneReader:
@@ -26,7 +26,7 @@ class StubSceneReader:
 
 @pytest.mark.asyncio
 async def test_server_advertises_2026_protocol_and_blender_scene_resource() -> None:
-    server = build_server(StubSceneReader())
+    server = build_blender_observation_server(StubSceneReader())
 
     async with Client(server, raise_exceptions=True) as client:
         assert client.protocol_version == "2026-07-28"
@@ -43,7 +43,7 @@ async def test_server_advertises_2026_protocol_and_blender_scene_resource() -> N
 
 @pytest.mark.asyncio
 async def test_reads_blender_scene_as_json_resource() -> None:
-    server = build_server(StubSceneReader())
+    server = build_blender_observation_server(StubSceneReader())
 
     async with Client(server, raise_exceptions=True) as client:
         result = await client.read_resource("blender://scene")

@@ -14,7 +14,7 @@ from typing import Any
 
 from mcp import Client
 
-from super_mcp.server import build_server
+from super_mcp.server import build_blender_observation_server
 
 ROOT = Path(__file__).resolve().parents[1]
 BRIDGE_HOST = "127.0.0.1"
@@ -72,7 +72,7 @@ def _wait_for_bridge(process: subprocess.Popen[bytes], log_path: Path) -> None:
 
 
 async def _read_scene() -> dict[str, Any]:
-    async with Client(build_server(), raise_exceptions=True) as client:
+    async with Client(build_blender_observation_server(), raise_exceptions=True) as client:
         result = await client.read_resource("blender://scene")
 
     if len(result.contents) != 1:

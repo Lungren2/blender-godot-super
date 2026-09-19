@@ -5,13 +5,16 @@ build-backend = "hatchling.build"
 [project]
 name = "blender-godot-super"
 version = "0.0.0"
-description = "Shared MCP foundation for agent-driven Blender and Godot workflows."
+description = "Unified MCP endpoint for agent-driven Blender and Godot workflows."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 dependencies = [
+  "fastmcp[tasks]==4.0.1",
   "mcp>=2.0.0,<3",
-  "pydantic>=2.11,<3",
+  "pydantic>=2.13,<3",
+  "godot-editor-mcp @ git+https://github.com/hybridindie/godot-mcp.git@daf1cf649f41fc95c403e03859d0461a5b272333",
+  "claude-blender @ git+https://github.com/minihellboy/claude-blender.git@5087d87212e0acf3225307c2b3512659c425cc5e",
 ]
 
 [project.scripts]
@@ -24,6 +27,9 @@ dev = [
   "pytest-asyncio>=1.1",
   "ruff>=0.12",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/super_mcp"]
