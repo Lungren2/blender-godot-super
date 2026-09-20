@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from pathlib import PurePosixPath
 
 _ALLOWED_TOP_LEVEL = {
+    ".editorconfig",
     ".github",
     ".gitignore",
     "AGENTS.md",
