@@ -59,6 +59,29 @@ ASTRA_ALLOWED_TOOLS: tuple[str, ...] = (
 
 ASTRA_AUTO_APPROVED_TOOLS = ASTRA_ALLOWED_TOOLS
 
+ASTRA_DEVELOPER_INSTRUCTIONS = """Own the development task through verification.
+
+Use MCP for semantic engine state and bounded editor operations. Use computer use for
+what is actually visible in Blender or Godot. When UI state is unknown, inspect a
+screenshot before acting. After a short group of UI actions, inspect another screenshot
+before continuing.
+
+For engine mutations: inspect first, checkpoint or preserve undo semantics, mutate,
+verify semantically, verify visually when presentation matters, save explicitly, then
+re-read persisted state. Restart an editor when persistence is part of the acceptance
+criteria.
+
+After the requested behavior is correct, do one bounded repository chore pass. Run
+`uv run python scripts/check_repo_hygiene.py --include-untracked` and inspect git status.
+Remove generated clutter, move misplaced new files into the repository's established
+directories, and keep tests/docs beside the behavior they cover. Do not reorganize or
+refactor unrelated code merely to make it look cleaner.
+
+Do not use arbitrary Blender Python execution in unattended work. Do not perform
+destructive editor operations unless the task requires them and the operation is
+explicitly approved by the surrounding application policy.
+"""
+
 
 def build_mcp_tool(
     *,
@@ -87,6 +110,26 @@ def build_mcp_tool(
     return tool
 
 
+def build_responses_profile(
+    *,
+    tunnel_id: str | None = None,
+    server_url: str | None = None,
+    include_computer: bool = True,
+) -> dict[str, Any]:
+    """Build a ready-to-embed Astra Responses API configuration fragment."""
+
+    tools: list[dict[str, Any]] = [
+        build_mcp_tool(tunnel_id=tunnel_id, server_url=server_url)
+    ]
+    if include_computer:
+        tools.append({"type": "computer"})
+    return {
+        "model": "gpt-6-astra",
+        "instructions": ASTRA_DEVELOPER_INSTRUCTIONS,
+        "tools": tools,
+    }
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Print the GPT-6 Astra Responses API MCP tool definition."
@@ -94,13 +137,27 @@ def _parser() -> argparse.ArgumentParser:
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--tunnel-id")
     target.add_argument("--server-url")
+    parser.add_argument(
+        "--responses-profile",
+        action="store_true",
+        help="Print a Responses config fragment with MCP, computer use, and dev-loop instructions.",
+    )
     parser.add_argument("--compact", action="store_true")
     return parser
 
 
 def main() -> None:
     args = _parser().parse_args()
-    payload = build_mcp_tool(tunnel_id=args.tunnel_id, server_url=args.server_url)
+    if args.responses_profile:
+        payload = build_responses_profile(
+            tunnel_id=args.tunnel_id,
+            server_url=args.server_url,
+        )
+    else:
+        payload = build_mcp_tool(
+            tunnel_id=args.tunnel_id,
+            server_url=args.server_url,
+        )
     if args.compact:
         print(json.dumps(payload, separators=(",", ":")))
     else:

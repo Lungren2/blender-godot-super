@@ -53,10 +53,12 @@ For unattended or long-horizon mutation work:
 1. Inspect host state before editing.
 2. Create an undo/checkpoint boundary before risky Blender changes and preserve Godot dry-run/undo semantics.
 3. Prefer bounded donor tools; do not use arbitrary Blender Python execution in unattended profiles.
-4. Verify mutations with observable evidence such as resources, renders, screenshots, runtime output, or tests.
-5. Save editor state explicitly.
-6. Restart the affected editor when persistence is part of the acceptance criteria, then verify the saved state through MCP again.
-7. Keep the parent action/artifact audit enabled so the executed trajectory can be reviewed independently of model reasoning.
+4. Use MCP reads for semantic truth. Use computer-use screenshots for visible UI truth. Inspect a screenshot before acting when the UI state is unknown, and inspect another after a short group of UI actions.
+5. Verify mutations with observable evidence such as resources, renders, screenshots, runtime output, or tests.
+6. Save editor state explicitly.
+7. Restart the affected editor when persistence is part of the acceptance criteria, then verify the saved state through MCP again.
+8. Keep the parent action/artifact audit enabled so the executed trajectory can be reviewed independently of model reasoning.
+9. After functional verification, run `uv run python scripts/check_repo_hygiene.py --include-untracked` and inspect git status. Remove generated clutter and move misplaced new files into established directories. Do not reorganize unrelated code as a cleanup exercise.
 
 ## Verification
 

@@ -102,6 +102,14 @@ Generate the bounded Responses API MCP tool object for GPT-6 Astra:
 uv run blender-godot-super-astra --tunnel-id tunnel_...
 ```
 
+For a full Responses configuration fragment that combines the MCP with OpenAI's native computer tool and the repository dev-loop instructions:
+
+```bash
+uv run blender-godot-super-astra --tunnel-id tunnel_... --responses-profile
+```
+
+The application running computer use must keep the desktop session alive, return a current screenshot when UI state is unknown, and return another screenshot after short action groups. The MCP remains the source for semantic Blender/Godot state; computer use verifies what is actually visible in the editors.
+
 For an already secured remote MCP endpoint, use `--server-url https://.../mcp` instead.
 
 The Astra `allowed_tools` profile imports inspection, reversible mutations, explicit saves, runtime/test operations, and visual verification. It intentionally excludes `blender_execute` and destructive Godot scene operations such as delete/reload/close.
@@ -118,7 +126,9 @@ The audit contains:
 
 Known secret-shaped keys such as API keys, authorization fields, passwords, secrets, and tokens are redacted. The audit still contains project/tool data and should be treated as sensitive development evidence. The default `.super-mcp/` directory is git-ignored.
 
-The real dual-editor CI path now exercises the wider loop: mutate Blender and Godot, capture Blender render and Godot editor screenshot evidence, save both, terminate both editors, restart them, and verify the saved object/node through the MCP after restart. The same run asserts that the audit contains the mutation, visual, save, and post-restart observation trajectory.
+The real dual-editor CI path now exercises the wider loop: mutate Blender and Godot, capture a Blender render and an OS-level screenshot of the live Godot editor desktop, save both, terminate both editors, restart them, and verify the saved object/node through the MCP after restart. The same run asserts that the audit contains the mutation, visual, save, and post-restart observation trajectory.
+
+Repository maintenance is a separate bounded pass after the requested behavior works. Run `uv run python scripts/check_repo_hygiene.py --include-untracked` during an agent loop. CI runs the tracked-files version. The check rejects generated caches/editor artifacts, unexpected top-level files, and Python code placed outside the established source/script/test/integration directories.
 
 ## Architecture rule
 

@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from super_mcp.astra import ASTRA_ALLOWED_TOOLS, build_mcp_tool
+from super_mcp.astra import (
+    ASTRA_ALLOWED_TOOLS,
+    ASTRA_DEVELOPER_INSTRUCTIONS,
+    build_mcp_tool,
+    build_responses_profile,
+)
 
 
 def test_astra_profile_uses_tunnel_and_excludes_escape_hatches() -> None:
@@ -29,3 +34,14 @@ def test_astra_profile_requires_exactly_one_target() -> None:
         build_mcp_tool()
     with pytest.raises(ValueError, match="exactly one"):
         build_mcp_tool(tunnel_id="t", server_url="https://example.test/mcp")
+
+
+def test_responses_profile_adds_computer_feedback_loop() -> None:
+    profile = build_responses_profile(tunnel_id="tunnel_test")
+
+    assert profile["model"] == "gpt-6-astra"
+    assert profile["tools"][0]["type"] == "mcp"
+    assert profile["tools"][1] == {"type": "computer"}
+    assert "inspect another screenshot" in profile["instructions"]
+    assert "check_repo_hygiene.py --include-untracked" in profile["instructions"]
+    assert profile["instructions"] == ASTRA_DEVELOPER_INSTRUCTIONS
