@@ -224,7 +224,7 @@ async def _start_blender(
     )
     if preserve_scene:
         command.append("--preserve-scene")
-    output = log_path.open("wb")
+    output = await asyncio.to_thread(log_path.open, "wb")
     try:
         return await asyncio.create_subprocess_exec(
             *command,
@@ -233,7 +233,7 @@ async def _start_blender(
             start_new_session=True,
         )
     finally:
-        output.close()
+        await asyncio.to_thread(output.close)
 
 
 async def _start_godot(
@@ -244,7 +244,7 @@ async def _start_godot(
     bridge_url: str,
     log_path: Path,
 ) -> asyncio.subprocess.Process:
-    output = log_path.open("wb")
+    output = await asyncio.to_thread(log_path.open, "wb")
     try:
         return await asyncio.create_subprocess_exec(
             xvfb_run,
@@ -259,7 +259,15 @@ async def _start_godot(
             start_new_session=True,
         )
     finally:
-        output.close()
+        await asyncio.to_thread(output.close)
+
+
+def _assert_nonempty_file(path: Path) -> None:
+    assert path.is_file() and path.stat().st_size > 100
+
+
+def _scene_contains(path: Path, needle: str) -> bool:
+    return needle in path.read_text(encoding="utf-8")
 
 
 def _collect_tree_names(node: Any) -> set[str]:
@@ -346,7 +354,7 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
     os.environ["GODOT_MCP_BRIDGE_URL"] = godot_url
     os.environ["GODOT_MCP_DEFAULT_TOOLSETS"] = ASTRA_GODOT_TOOLSETS
 
-    from super_mcp.server import build_server
+    from super_mcp.server import build_server  # noqa: PLC0415 - env must be seeded first
 
     with tempfile.TemporaryDirectory(prefix="super-persistence-") as temp:
         root = Path(temp)
@@ -424,9 +432,9 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                         "resolution_y": 180,
                     },
                 )
-                assert blender_render.is_file() and blender_render.stat().st_size > 100
+                _assert_nonempty_file(blender_render)
                 await _call(client, "blender_save", {"filepath": str(blend_file)})
-                assert blend_file.is_file() and blend_file.stat().st_size > 0
+                _assert_nonempty_file(blend_file)
 
                 await _call(
                     client,
@@ -509,8 +517,7 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                 await _terminate(godot)
                 await _terminate(blender)
 
-        saved_scene = (godot_project / "Smoke.tscn").read_text(encoding="utf-8")
-        assert "AstraPersistedPanel" in saved_scene
+        assert _scene_contains(godot_project / "Smoke.tscn", "AstraPersistedPanel")
         _assert_audit(audit_dir)
         print(
             "Persistence smoke passed: both editors mutated, emitted visual evidence, "

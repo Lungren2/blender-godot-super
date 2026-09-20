@@ -128,9 +128,8 @@ class AuditSink:
             )
         if is_dataclass(value) and not isinstance(value, type):
             return self.normalize(asdict(value), request_id=request_id, label=label)
-        model_dump = getattr(value, "model_dump", None)
-        if callable(model_dump):
-            dumped = model_dump(mode="json", by_alias=True)
+        if hasattr(value, "model_dump"):
+            dumped = value.model_dump(mode="json", by_alias=True)
             return self.normalize(dumped, request_id=request_id, label=label)
         if isinstance(value, Mapping):
             image_artifact = self._maybe_extract_image(value, request_id=request_id, label=label)
