@@ -60,6 +60,20 @@ For unattended or long-horizon mutation work:
 8. Keep the parent action/artifact audit enabled so the executed trajectory can be reviewed independently of model reasoning.
 9. After functional verification, run `uv run python scripts/check_repo_hygiene.py --include-untracked` and inspect git status. Remove generated clutter and move misplaced new files into established directories. Do not reorganize unrelated code as a cleanup exercise.
 
+## Consumer game methodology
+
+The bootstrap installs project game-development guidance from `src/super_mcp/game_repo_template/`.
+
+Keep the seven skills narrow enough that Codex can select them reliably. The six specialist skills should continue to match the Brackeys Game Design playlist topics: foundations, difficulty, pacing, storytelling, combat, and visuals. `game-dev-iteration` owns the cross-cutting prototype, playtest, observation, promotion, maintenance, and stop workflow.
+
+Preserve source boundaries. The playlist and linked source material provide design lenses; the Codex/Blender/Godot procedures are this repository's operational adaptation. Do not present adapted rules as video transcript content.
+
+The target repo's `AGENTS.md` block is managed and may be refreshed with `--force`. Preserve all guidance outside that block.
+
+The target repo's `GAME_DESIGN.md` is project-owned after creation. Never overwrite it from the bootstrap, including with `--force`.
+
+When methodology templates change, keep unit coverage for idempotence and preservation behavior, and keep the wheel-content check so `uvx` receives every Markdown template.
+
 ## Verification
 
 Use local checks first. CI is terminal verification, not an interactive development shell. Keep commits bounded and coherent.
