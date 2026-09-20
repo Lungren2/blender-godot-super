@@ -18,7 +18,10 @@ dependencies = [
 ]
 
 [project.scripts]
-blender-godot-super = "super_mcp.server:main"
+blender-godot-super = "super_mcp.launch:main"
+blender-godot-super-init = "super_mcp.bootstrap:main"
+blender-godot-super-astra = "super_mcp.astra:main"
+blender-godot-super-tunnel = "super_mcp.tunnel:main"
 
 [dependency-groups]
 dev = [
