@@ -11,10 +11,18 @@ The parent server runs on FastMCP 4 / MCP 2026-07-28. Godot is mounted in-proces
 
 ## Add it to a game repo
 
-From the root of a game repository:
+From the root of a game repository, run this as one command. It works in PowerShell, Bash, and other normal shells:
 
-```bash
-uvx --from git+https://github.com/Lungren2/blender-godot-super.git@main \
+```text
+uvx --from "git+https://github.com/Lungren2/blender-godot-super.git@main" blender-godot-super-init .
+```
+
+`uvx` runs the command in a temporary environment. Do not run `blender-godot-super-init` by itself on the next prompt.
+
+If you split the command across lines in PowerShell, use a backtick:
+
+```powershell
+uvx --from "git+https://github.com/Lungren2/blender-godot-super.git@main" `
   blender-godot-super-init .
 ```
 
@@ -24,11 +32,8 @@ It creates or extends `.codex/config.toml`, applies the bounded tool allow-list,
 
 If Blender is installed somewhere the initializer cannot detect, rerun only that part:
 
-```bash
-uvx --from git+https://github.com/Lungren2/blender-godot-super.git@main \
-  blender-godot-super-init . \
-  --skip-godot \
-  --blender-addons "/path/to/Blender/<version>/scripts/addons"
+```text
+uvx --from "git+https://github.com/Lungren2/blender-godot-super.git@main" blender-godot-super-init . --skip-godot --blender-addons "/path/to/Blender/<version>/scripts/addons"
 ```
 
 For a monorepo with more than one `project.godot`, pass `--godot-project path/to/game`. Use `--force` to refresh the managed Codex section and pinned editor integrations.

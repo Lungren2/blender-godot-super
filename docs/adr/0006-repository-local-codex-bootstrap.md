@@ -13,7 +13,7 @@ The editor integrations have different scopes. Godot plug-ins belong in the game
 - Add a `blender-godot-super-init` command for a consumer repository.
 - Write a managed `[mcp_servers.blender-godot-super]` section to `.codex/config.toml`.
 - Launch the MCP with `uvx` over stdio. When the initializer itself came from Git, pin the generated config to the resolved commit recorded in package metadata.
-- Set `cwd = ".."` so the MCP runs from the repository root.
+- Set `cwd = "."` because Codex resolves project MCP working directories from the repository session root.
 - Apply the bounded Astra tool allow-list through Codex `enabled_tools`.
 - Use a 60-second startup timeout and 180-second tool timeout for first-run resolution, imports, and renders.
 - Install the pinned Godot plug-in into the detected or selected Godot project and enable it in `project.godot`.
