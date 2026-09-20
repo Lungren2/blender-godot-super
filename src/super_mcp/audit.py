@@ -191,10 +191,9 @@ class AuditSink:
 
     def _append_jsonl(self, path: Path, record: Mapping[str, Any]) -> None:
         line = json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        with self._lock:
-            with path.open("a", encoding="utf-8") as handle:
-                handle.write(line)
-                handle.write("\n")
+        with self._lock, path.open("a", encoding="utf-8") as handle:
+            handle.write(line)
+            handle.write("\n")
 
 
 CallNext = Callable[[Any], Awaitable[Any]]
