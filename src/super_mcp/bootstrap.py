@@ -13,6 +13,7 @@ from pathlib import Path
 
 from super_mcp.astra import ASTRA_ALLOWED_TOOLS
 from super_mcp.installations import BLENDER, GODOT, UpstreamIntegration, install
+from super_mcp.methodology import install_game_methodology
 
 PACKAGE_NAME = "blender-godot-super"
 DEFAULT_PACKAGE_SOURCE = "git+https://github.com/Lungren2/blender-godot-super.git@main"
@@ -347,6 +348,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-blender", action="store_true")
     parser.add_argument("--no-gitignore", action="store_true")
     parser.add_argument(
+        "--skip-methodology",
+        action="store_true",
+        help="Do not install Codex game-design skills, AGENTS guidance, or GAME_DESIGN.md.",
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="Replace the managed Codex MCP section and installed editor integrations.",
@@ -368,6 +374,10 @@ def main() -> None:
     if not args.no_gitignore:
         gitignore = ensure_gitignore(project_root)
         print(f"Ensured local artifacts are ignored: {gitignore}")
+
+    if not args.skip_methodology:
+        for message in install_game_methodology(project_root, force=args.force):
+            print(message)
 
     if not args.skip_godot:
         godot_project: Path | None
@@ -408,7 +418,10 @@ def main() -> None:
             print(f"{state} Blender add-on: {destination}")
             print("Enable 'Claude Blender' once in Blender Preferences > Add-ons.")
 
-    print("Repo setup complete. Trust the project in Codex, then run /mcp to verify.")
+    print(
+        "Repo setup complete. Trust the project in Codex, read GAME_DESIGN.md, "
+        "then run /mcp to verify."
+    )
 
 
 if __name__ == "__main__":

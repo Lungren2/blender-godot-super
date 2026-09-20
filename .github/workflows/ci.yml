@@ -21,6 +21,10 @@ jobs:
       - run: uv run ruff check .
       - run: uv run mypy src
       - run: uv run pytest
+      - name: Verify wheel includes game methodology templates
+        run: |
+          uv build --wheel
+          uv run python scripts/check_packaged_methodology.py dist/*.whl
 
   blender-integration:
     needs: python

@@ -30,15 +30,31 @@ The initializer configures the repository for Codex without cloning this project
 
 It creates or extends `.codex/config.toml`, applies the bounded tool allow-list, installs and enables the pinned Godot plug-in when a project is found, installs the pinned Blender add-on when the user add-ons directory can be detected, and ignores local `.super-mcp/` artifacts.
 
+It also installs the game-development method into the target repository:
+
+- `.agents/skills/game-dev-iteration` controls the prototype -> playtest -> observe -> keep/revise/revert loop and the stop condition;
+- six design-lens skills match Brackeys' Game Design playlist: foundations, difficulty, pacing, storytelling, combat, and visuals;
+- `godot-game-development` and `blender-game-assets` translate those design decisions into concrete engine workflows;
+- a managed block is appended to the target repo's `AGENTS.md`;
+- `GAME_DESIGN.md` is created as a living record of core fantasy, design pillars, player verbs, quality budget, current hypotheses, playtest observations, durable decisions, rejected experiments, and open questions.
+
+`GAME_DESIGN.md` is project-owned. The initializer never overwrites it, even with `--force`. Skill files and the managed `AGENTS.md` block are refreshable methodology: `--force` replaces those managed parts while preserving unrelated `AGENTS.md` content.
+
 If Blender is installed somewhere the initializer cannot detect, rerun only that part:
 
 ```text
 uvx --from "git+https://github.com/Lungren2/blender-godot-super.git@main" blender-godot-super-init . --skip-godot --blender-addons "/path/to/Blender/<version>/scripts/addons"
 ```
 
-For a monorepo with more than one `project.godot`, pass `--godot-project path/to/game`. Use `--force` to refresh the managed Codex section and pinned editor integrations.
+For a monorepo with more than one `project.godot`, pass `--godot-project path/to/game`. Use `--force` to refresh the managed Codex section, methodology skills, managed `AGENTS.md` block, and pinned editor integrations. Use `--skip-methodology` only when a repository intentionally manages its own game-development skills and design instructions.
 
-After setup, trust the repository in Codex and run `/mcp`. Codex loads project MCP configuration from `.codex/config.toml` only for trusted projects.
+To refresh an existing repository without reinstalling either editor integration:
+
+```text
+uvx --from "git+https://github.com/Lungren2/blender-godot-super.git@main" blender-godot-super-init . --force --skip-godot --skip-blender
+```
+
+After setup, trust the repository in Codex, read `GAME_DESIGN.md`, and run `/mcp`. Codex discovers repository skills from `.agents/skills` and loads project MCP configuration from `.codex/config.toml` for trusted projects.
 
 ## Install this repository for development
 
