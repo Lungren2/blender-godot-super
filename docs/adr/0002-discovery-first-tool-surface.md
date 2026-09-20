@@ -1,20 +1,22 @@
 # ADR 0002: Discovery-first tool surface
 
-Status: accepted for scaffold
+Status: superseded by ADR 0004
 
-## Decision
+## Historical decision
 
-Do not advertise the full engine capability catalog as one MCP tool per operation by default.
+The initial scaffold proposed a small application-level gateway for status, discovery, schema lookup, invocation, and evidence instead of advertising many direct engine operations.
 
-Use a small stable gateway for status, discovery, contract lookup, invocation, and evidence access. Resources and prompts carry read-state and procedure where those MCP primitives fit better.
+## Why it changed
 
-## Why
+The chosen upstream implementations already have working model-facing tool strategies:
 
-Large static tool surfaces consume context, weaken tool selection, and couple agent behavior to implementation breadth. Blender and Godot can each expose hundreds of useful operations; capability count should not determine model-facing schema count.
+- Godot uses gated FastMCP toolsets.
+- Blender exposes a moderate direct tool set.
 
-## Consequences
+Adding another search/schema/invoke protocol before measuring a real problem would duplicate working behavior and make the MVP harder to reason about.
 
-- capability metadata and search quality become core infrastructure;
-- schemas must be retrievable on demand;
-- invocation must preserve strong typing and structured errors;
-- frequently used operations may earn direct tools later, based on evidence rather than convenience.
+## Current rule
+
+Preserve the donor tool names and MCP resources. Keep MCP protocol discovery separate from any future application capability catalog. Add another discovery layer only if real agent runs show that the combined tool set harms tool selection or context use.
+
+ADR 0004 defines the current composition decision.

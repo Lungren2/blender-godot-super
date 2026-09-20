@@ -1,18 +1,19 @@
 # ADR 0001: Shared core with host adapters
 
-Status: accepted for scaffold
+Status: superseded by ADR 0003 and ADR 0004
 
-## Decision
+## Historical decision
 
-Blender and Godot integrations share one MCP-facing core. Engine-specific code implements host capabilities behind canonical contracts.
+The initial scaffold assumed Blender and Godot would share one MCP-facing core and implement engine-specific capabilities behind canonical host contracts.
 
-## Why
+## Why it changed
 
-Two independent MCP implementations would duplicate discovery, safety, evidence, prompt, and protocol behavior and would drift over time. The useful distinction is host capability, not MCP architecture.
+Real Blender work showed that shared engine semantics should be extracted only after both hosts demonstrate the same behavior. The MVP later moved further toward reuse by composing mature upstream Blender and Godot MCP implementations rather than rebuilding their operation sets behind a repository-owned host abstraction.
 
-## Consequences
+## Still applicable
 
-- shared contracts must avoid leaking one engine's object model into the other;
-- host-specific capabilities remain valid when a common abstraction would be artificial;
-- integration directories stay thin;
-- protocol upgrades happen once.
+- Do not force one engine's object model onto the other.
+- Keep genuinely shared infrastructure in the parent MCP.
+- Upgrade the parent protocol and composition layer in one place.
+
+ADR 0003 defines the reality-first abstraction rule. ADR 0004 defines the current upstream-composition architecture.

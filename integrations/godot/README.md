@@ -1,13 +1,13 @@
 # Godot integration
 
-This directory contains only code that must execute inside the Godot editor.
+Production Godot support comes from the pinned MIT-licensed `hybridindie/godot-mcp` implementation. This repository does not maintain a separate Godot editor plug-in.
 
-Planned responsibilities:
+Install the matching upstream plug-in into a Godot project with:
 
-- editor plugin lifecycle and connection state;
-- scene-tree and editor operations behind shared contracts;
-- `EditorUndoRedoManager` integration for mutations;
-- viewport/runtime evidence capture;
-- Godot-native validation and runtime probes.
+```bash
+uv run python scripts/install_integrations.py --godot-project /path/to/godot/project
+```
 
-MCP registration, capability schemas, discovery policy, and workflow prompts belong in `src/super_mcp`.
+The upstream revision is pinned in `pyproject.toml` and `src/super_mcp/installations.py`. Attribution is recorded in `THIRD_PARTY_NOTICES.md`.
+
+Godot's MCP server is mounted in-process by `src/super_mcp/server.py` so its bridge lifecycle and toolset state persist across calls.
