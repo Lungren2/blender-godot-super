@@ -19,6 +19,7 @@ from fastmcp.exceptions import ResourceError
 from mcp.shared.exceptions import MCPError
 
 from super_mcp.astra import ASTRA_GODOT_TOOLSETS
+from super_mcp.audit import AuditSink
 from super_mcp.installations import BLENDER, GODOT, install
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -243,12 +244,22 @@ async def _start_godot(
     project: Path,
     bridge_url: str,
     log_path: Path,
+    display_info_path: Path,
 ) -> asyncio.subprocess.Process:
     output = await asyncio.to_thread(log_path.open, "wb")
+    launcher = (
+        'printf "%s\\n%s\\n" "$DISPLAY" "$XAUTHORITY" > "$1"; '
+        'shift; exec "$@"'
+    )
     try:
         return await asyncio.create_subprocess_exec(
             xvfb_run,
             "-a",
+            "sh",
+            "-c",
+            launcher,
+            "godot-xvfb",
+            str(display_info_path),
             str(godot_bin),
             "--editor",
             "--path",
@@ -260,6 +271,65 @@ async def _start_godot(
         )
     finally:
         await asyncio.to_thread(output.close)
+
+
+async def _read_display_env(display_info_path: Path) -> dict[str, str]:
+    deadline = time.monotonic() + STARTUP_TIMEOUT_SECONDS
+    while time.monotonic() < deadline:
+        if display_info_path.exists():
+            lines = display_info_path.read_text(encoding="utf-8").splitlines()
+            if len(lines) >= 2 and lines[0] and lines[1]:
+                return {
+                    "DISPLAY": lines[0],
+                    "XAUTHORITY": lines[1],
+                }
+        await asyncio.sleep(POLL_INTERVAL_SECONDS)
+    raise TimeoutError(f"Godot X display metadata was not written to {display_info_path}")
+
+
+async def _capture_desktop(
+    *,
+    display_info_path: Path,
+    output_path: Path,
+    audit_dir: Path,
+) -> None:
+    scrot = shutil.which("scrot")
+    if scrot is None:
+        raise FileNotFoundError("scrot is required for desktop visual verification")
+
+    display_env = await _read_display_env(display_info_path)
+    output_path.unlink(missing_ok=True)
+    process = await asyncio.create_subprocess_exec(
+        scrot,
+        str(output_path),
+        env={**os.environ, **display_env},
+    )
+    code = await process.wait()
+    if code != 0:
+        raise RuntimeError(f"scrot exited with code {code}")
+    _assert_nonempty_file(output_path)
+
+    sink = AuditSink(audit_dir)
+    artifact = sink.store_bytes(
+        output_path.read_bytes(),
+        request_id=None,
+        label="godot-editor-computer-screenshot",
+        suffix=".png",
+        media_type="image/png",
+    )
+    sink.emit_action(
+        {
+            "record_type": "action",
+            "kind": "computer",
+            "name": "computer_screenshot",
+            "request_id": None,
+            "started_at": None,
+            "duration_ms": None,
+            "status": "completed",
+            "request": {"target": "Godot editor desktop"},
+            "response": artifact,
+        }
+    )
 
 
 def _assert_nonempty_file(path: Path) -> None:
@@ -306,7 +376,7 @@ def _assert_audit(audit_dir: Path) -> None:
         "blender_render",
         "blender_save",
         "godot_scene_edit_create_node",
-        "godot_editor_capture_screenshot",
+        "computer_screenshot",
         "godot_scene_edit_save_scene",
         "blender://scene",
         "godot://scene/tree",
@@ -345,6 +415,8 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
     xvfb_run = shutil.which("xvfb-run")
     if xvfb_run is None:
         raise FileNotFoundError("xvfb-run is required for the persistence smoke")
+    if shutil.which("scrot") is None:
+        raise FileNotFoundError("scrot is required for the persistence smoke")
 
     blender_port = _free_port()
     godot_port = _free_port()
@@ -363,6 +435,9 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
         audit_dir = root / "audit"
         blend_file = root / "persisted.blend"
         blender_render = root / "blender-visual.png"
+        godot_desktop = root / "godot-editor-visual.png"
+        godot_display_1 = root / "godot-display-1.txt"
+        godot_display_2 = root / "godot-display-2.txt"
 
         _write_godot_project(godot_project)
         install(BLENDER, blender_addons / "claude_blender")
@@ -376,7 +451,6 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                 "blender_save",
                 "godot_scene_edit_create_node",
                 "godot_scene_edit_save_scene",
-                "godot_editor_capture_screenshot",
             }
             assert required_tools <= tools
 
@@ -395,6 +469,7 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                 project=godot_project,
                 bridge_url=godot_url,
                 log_path=godot_log_1,
+                display_info_path=godot_display_1,
             )
             try:
                 await _wait_for_hosts(
@@ -470,7 +545,11 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                     "godot_scene_edit_select_nodes",
                     {"node_paths": ["AstraPersistedPanel"]},
                 )
-                await _call(client, "godot_editor_capture_screenshot")
+                await _capture_desktop(
+                    display_info_path=godot_display_1,
+                    output_path=godot_desktop,
+                    audit_dir=audit_dir,
+                )
                 await _call(client, "godot_scene_edit_save_scene")
             finally:
                 await _terminate(godot)
@@ -493,6 +572,7 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
                 project=godot_project,
                 bridge_url=godot_url,
                 log_path=godot_log_2,
+                display_info_path=godot_display_2,
             )
             try:
                 blender_state, _godot_state = await _wait_for_hosts(

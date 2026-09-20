@@ -97,9 +97,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v xvfb-run >/dev/null 2>&1; then
+          if ! command -v xvfb-run >/dev/null 2>&1 || ! command -v scrot >/dev/null 2>&1; then
             sudo apt-get update
-            sudo apt-get install -y xvfb
+            sudo apt-get install -y xvfb scrot
           fi
 
       - name: Cache Blender
