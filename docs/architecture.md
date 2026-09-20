@@ -64,11 +64,22 @@ state starts fresh.
 
 ## Automation transport and evidence
 
-The default transport remains stdio. The launcher also supports loopback-only Streamable HTTP for private automation. Public/private-network traversal is kept outside the MCP process and can be provided by OpenAI Secure MCP Tunnel.
+The default transport remains stdio. The launcher also supports loopback-only Streamable HTTP for private automation. Public/private-network traversal stays outside the MCP process and can be provided by OpenAI Secure MCP Tunnel.
 
-GPT-6 Astra policy is a client-edge profile, not an engine abstraction. The generated Responses API MCP definition uses `allowed_tools` to import a bounded subset and deliberately omits arbitrary Blender Python plus destructive Godot scene operations.
+GPT-6 Astra policy lives at the client edge, not inside the engine integrations. The generated Responses configuration can combine two tool channels:
 
-When auditing is enabled, parent middleware records tool calls, resource reads, and prompt renders before they cross into either mounted donor. Binary image outputs are materialized as content-addressed artifacts so a long agent trajectory can be inspected from observable actions and evidence.
+```text
+Astra
+  |-- MCP ----------> semantic Blender/Godot state and bounded editor operations
+  |
+  +-- computer -----> visible desktop state and short UI action sequences
+```
+
+The MCP profile uses `allowed_tools` to import a bounded subset and deliberately omits arbitrary Blender Python plus destructive Godot scene operations. The computer-use runner owns its persistent desktop session. It should inspect a current screenshot when UI state is unknown and inspect another screenshot after a short group of UI actions.
+
+When auditing is enabled, parent middleware records tool calls, resource reads, and prompt renders before they cross into either mounted donor. Binary image outputs are materialized as content-addressed artifacts. External computer-use observations can be recorded into the same audit so the executed trajectory is reviewable without relying on model reasoning.
+
+Repository cleanup is a separate bounded phase after the requested behavior passes verification. The hygiene check rejects generated/editor artifacts, misplaced root files, and Python code outside the established source/script/test/integration directories. Agents may fix those violations, but they should not reorganize unrelated code as routine cleanup.
 
 ## Installation boundary
 
