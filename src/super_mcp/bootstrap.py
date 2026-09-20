@@ -247,7 +247,7 @@ def blender_addons_candidates(
 
     resolved_home = home or Path.home()
     resolved_platform = platform or sys.platform
-    resolved_env = environ or os.environ
+    resolved_env = environ if environ is not None else os.environ
 
     explicit_scripts = resolved_env.get("BLENDER_USER_SCRIPTS")
     if explicit_scripts:
