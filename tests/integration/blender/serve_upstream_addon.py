@@ -15,6 +15,11 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--addons-dir", type=Path, required=True)
     parser.add_argument("--port", type=int, required=True)
     parser.add_argument("--run-seconds", type=float, default=120.0)
+    parser.add_argument(
+        "--preserve-scene",
+        action="store_true",
+        help="Serve the loaded .blend instead of replacing it with the CI fixture.",
+    )
 
     argv = sys.argv
     return parser.parse_args(argv[argv.index("--") + 1 :] if "--" in argv else [])
@@ -55,7 +60,8 @@ def main() -> None:
     import claude_blender
 
     claude_blender.register()
-    _make_scene()
+    if not args.preserve_scene:
+        _make_scene()
     claude_blender._setup_handler()
 
     server = claude_blender.get_server()

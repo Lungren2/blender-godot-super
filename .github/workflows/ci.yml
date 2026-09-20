@@ -162,3 +162,9 @@ jobs:
           uv run python scripts/ci_dual_host_smoke.py \
             --blender ".cache/blender/blender-$BLENDER_VERSION-linux-x64/blender" \
             --godot ".cache/godot/Godot_v$GODOT_VERSION-stable_linux.x86_64"
+
+      - name: Exercise mutation, visual verification, restart, and persistence
+        run: |
+          uv run python scripts/ci_persistence_smoke.py \
+            --blender ".cache/blender/blender-$BLENDER_VERSION-linux-x64/blender" \
+            --godot ".cache/godot/Godot_v$GODOT_VERSION-stable_linux.x86_64"
