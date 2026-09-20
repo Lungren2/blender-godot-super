@@ -36,15 +36,27 @@ Do not force Blender and Godot through a shared scene/object/node ontology until
 
 ## Tool-surface rule
 
-Do not expose one MCP tool per engine operation by default.
+Preserve the pinned donors' working tool-surface strategies: Blender's direct tools and Godot's gated toolsets.
 
-A discovery-first application gateway remains a candidate for later breadth. Do not build it merely because the repository has reserved catalog directories.
+Do not add another search/schema/invoke gateway merely because the repository has reserved catalog directories. Add one only if measured model behavior shows that the composed donor surface needs it.
 
 ## Research record
 
 The raw architecture discussion is preserved verbatim in `docs/research/architecture-debate-transcript.md` and `docs/research/ecosystem-survey-transcript.md`. Read them when revisiting host boundaries, capability discovery, resource/tool ownership, evidence, or tool-surface scaling.
 
 Those transcripts are source material, not settled decisions. ADRs and current implementation state remain authoritative where they diverge.
+
+## Automated development loop
+
+For unattended or long-horizon mutation work:
+
+1. Inspect host state before editing.
+2. Create an undo/checkpoint boundary before risky Blender changes and preserve Godot dry-run/undo semantics.
+3. Prefer bounded donor tools; do not use arbitrary Blender Python execution in unattended profiles.
+4. Verify mutations with observable evidence such as resources, renders, screenshots, runtime output, or tests.
+5. Save editor state explicitly.
+6. Restart the affected editor when persistence is part of the acceptance criteria, then verify the saved state through MCP again.
+7. Keep the parent action/artifact audit enabled so the executed trajectory can be reviewed independently of model reasoning.
 
 ## Verification
 

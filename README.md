@@ -75,6 +75,51 @@ godot://node/selected
 
 Blender tools retain their `blender_*` names. Godot keeps its `godot_*` names and starts with its normal gated toolset policy. Use `godot_list_toolsets` and `godot_enable_toolset` when broader Godot operations are needed.
 
+## GPT-6 Astra and Secure MCP Tunnel
+
+For a local automated loop, run the parent as a loopback Streamable HTTP server with the Astra runtime profile:
+
+```bash
+uv run blender-godot-super --transport http --profile astra
+```
+
+The endpoint is `http://127.0.0.1:8000/mcp` by default. HTTP mode refuses non-loopback binds. The Astra profile seeds the bounded Godot toolsets used by the development loop and writes the action/artifact audit under `.super-mcp/audit`.
+
+To expose that private endpoint to the OpenAI Responses API, install OpenAI's current `tunnel-client`, set its runtime credential, and create a Secure MCP Tunnel profile:
+
+```bash
+export CONTROL_PLANE_API_KEY=...
+uv run blender-godot-super-tunnel init --tunnel-id tunnel_...
+uv run blender-godot-super-tunnel doctor
+uv run blender-godot-super-tunnel run
+```
+
+The MCP server and `tunnel-client` run as separate foreground processes. The server itself never reads or stores the OpenAI control-plane credential.
+
+Generate the bounded Responses API MCP tool object for GPT-6 Astra:
+
+```bash
+uv run blender-godot-super-astra --tunnel-id tunnel_...
+```
+
+For an already secured remote MCP endpoint, use `--server-url https://.../mcp` instead.
+
+The Astra `allowed_tools` profile imports inspection, reversible mutations, explicit saves, runtime/test operations, and visual verification. It intentionally excludes `blender_execute` and destructive Godot scene operations such as delete/reload/close.
+
+## Action and artifact audit
+
+Pass `--audit-dir PATH` to either transport to enable parent-level logging. `--profile astra` enables it by default at `.super-mcp/audit`.
+
+The audit contains:
+
+- `actions.jsonl`: tool calls, resource reads, prompt renders, arguments, status, duration, and normalized results;
+- `artifacts.jsonl`: content-addressed artifact metadata;
+- `artifacts/`: extracted image/binary outputs and large text payloads.
+
+Known secret-shaped keys such as API keys, authorization fields, passwords, secrets, and tokens are redacted. The audit still contains project/tool data and should be treated as sensitive development evidence. The default `.super-mcp/` directory is git-ignored.
+
+The real dual-editor CI path now exercises the wider loop: mutate Blender and Godot, capture Blender render and Godot editor screenshot evidence, save both, terminate both editors, restart them, and verify the saved object/node through the MCP after restart. The same run asserts that the audit contains the mutation, visual, save, and post-restart observation trajectory.
+
 ## Architecture rule
 
 Unified means one install and one MCP endpoint. It does not mean Blender objects and Godot nodes are forced into one domain model.

@@ -8,10 +8,13 @@ servers.
 ```text
 agent / MCP client
         |
+        | stdio, or Responses API
+        | via Secure MCP Tunnel
         v
 +---------------------------+
 | blender-godot-super       |
 | FastMCP 4 parent          |
+| optional audit middleware |
 +-------------+-------------+
               |
        +------+------+
@@ -59,6 +62,14 @@ process-local state survive for the parent lifetime. If the subprocess dies, the
 transport may reconnect it; Blender editor state remains in Blender while child-local
 state starts fresh.
 
+## Automation transport and evidence
+
+The default transport remains stdio. The launcher also supports loopback-only Streamable HTTP for private automation. Public/private-network traversal is kept outside the MCP process and can be provided by OpenAI Secure MCP Tunnel.
+
+GPT-6 Astra policy is a client-edge profile, not an engine abstraction. The generated Responses API MCP definition uses `allowed_tools` to import a bounded subset and deliberately omits arbitrary Blender Python plus destructive Godot scene operations.
+
+When auditing is enabled, parent middleware records tool calls, resource reads, and prompt renders before they cross into either mounted donor. Binary image outputs are materialized as content-addressed artifacts so a long agent trajectory can be inspected from observable actions and evidence.
+
 ## Installation boundary
 
 The Python packages are installed directly from immutable Git revisions.
@@ -102,6 +113,7 @@ unit          composition helpers and installer/archive behavior
 contract      one MCP client sees both upstream surfaces
 integration   live Blender/Godot editor bridges
 smoke         packaged client -> unified MCP -> live host state
+persistence   mutate -> visual evidence -> save -> restart -> persisted-state read
 ```
 
 The earlier repository-owned Blender observation bridge remains as a real-host integration
