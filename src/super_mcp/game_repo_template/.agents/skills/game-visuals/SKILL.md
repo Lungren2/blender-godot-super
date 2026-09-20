@@ -146,6 +146,14 @@ Prioritize visuals the player sees often or relies on for decisions:
 
 A rare prop does not deserve the same polish budget as the movement animation seen every second.
 
+## Engine execution handoff
+
+Use `$godot-game-development` for final composition in the game camera, WorldEnvironment and lighting, engine materials and shaders, particles, UI, camera response, runtime visibility, and acceptance screenshots.
+
+Use `$blender-game-assets` for source geometry, silhouette, proportion, topology, UVs when required, source materials, rigs, and source animation. Import early and let the running Godot scene decide whether more Blender detail is worth adding.
+
+When the result differs between Blender and Godot, treat Godot as the acceptance environment and fix the problem in the tool that owns it.
+
 ## Record the visual language
 
 Update `GAME_DESIGN.md` when a visual rule becomes durable, such as palette, shape language, lighting rule, feedback convention, or readability target.

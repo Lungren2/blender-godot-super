@@ -64,7 +64,7 @@ For unattended or long-horizon mutation work:
 
 The bootstrap installs project game-development guidance from `src/super_mcp/game_repo_template/`.
 
-Keep the seven skills narrow enough that Codex can select them reliably. The six specialist skills should continue to match the Brackeys Game Design playlist topics: foundations, difficulty, pacing, storytelling, combat, and visuals. `game-dev-iteration` owns the cross-cutting prototype, playtest, observation, promotion, maintenance, and stop workflow.
+Keep the nine skills narrow enough that Codex can select them reliably. The six design-lens skills should continue to match the Brackeys Game Design playlist topics: foundations, difficulty, pacing, storytelling, combat, and visuals. `game-dev-iteration` owns the cross-cutting prototype, playtest, observation, promotion, maintenance, and stop workflow. `godot-game-development` and `blender-game-assets` own engine execution and must stay grounded in primary Godot/Blender documentation plus the bounded MCP behavior.
 
 Preserve source boundaries. The playlist and linked source material provide design lenses; the Codex/Blender/Godot procedures are this repository's operational adaptation. Do not present adapted rules as video transcript content.
 

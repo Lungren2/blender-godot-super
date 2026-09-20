@@ -93,6 +93,30 @@ Record durable rules for silhouette, composition, lighting, palette, shape langu
 
 - TODO
 
+## Engine execution conventions
+
+Record stable project conventions here so engine choices do not get reinvented every session.
+
+### Godot
+
+- Primary scene ownership pattern: TODO
+- Reusable scene convention: TODO
+- Shared data / Resource convention: TODO
+- Signal convention: TODO
+- Autoload / global-state policy: TODO
+- Animation ownership: TODO
+- Runtime verification entry point: TODO
+
+### Blender and asset pipeline
+
+- Source asset location: TODO
+- Preferred import path (.blend, glTF/GLB, or mixed): TODO
+- Scale / origin / naming convention: TODO
+- Collision ownership and import hints: TODO
+- Rig / animation naming convention: TODO
+- Godot wrapper-scene convention: TODO
+- Representative in-game asset review scene: TODO
+
 ## Current hypotheses
 
 Keep experiments small enough to test. Move proven decisions to the durable sections above. Move failed experiments to "Rejected experiments and lessons."

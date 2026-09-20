@@ -7,6 +7,8 @@ from pathlib import Path, PurePosixPath
 
 SKILL_NAMES = (
     "game-dev-iteration",
+    "godot-game-development",
+    "blender-game-assets",
     "game-design-foundations",
     "game-difficulty",
     "game-pacing",

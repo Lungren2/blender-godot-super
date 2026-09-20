@@ -129,6 +129,16 @@ Use the specialized skill that matches the design question:
 
 Use more than one only when the task genuinely crosses those concerns.
 
+## Choose the execution skill after the design question is clear
+
+Use `$godot-game-development` when the next step is a Godot scene, script, Resource/data, signal, animation, runtime, UI, shader, test, or project-structure change.
+
+Use `$blender-game-assets` when the next step is source geometry, modifiers, materials, rigging, source animation, collision/import helpers, or a Blender-to-Godot asset iteration.
+
+For work that crosses both engines, keep ownership explicit. Blender owns source geometry, source rigging, and source animation. Godot owns gameplay state, runtime collision, engine effects, UI, camera behavior, and final in-game acceptance.
+
+Do not start engine work until the design question is specific enough to choose an owner.
+
 ## Promote ideas only after evidence
 
 When an experiment repeatedly proves useful, decide whether it deserves production treatment.

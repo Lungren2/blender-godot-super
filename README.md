@@ -33,7 +33,8 @@ It creates or extends `.codex/config.toml`, applies the bounded tool allow-list,
 It also installs the game-development method into the target repository:
 
 - `.agents/skills/game-dev-iteration` controls the prototype -> playtest -> observe -> keep/revise/revert loop and the stop condition;
-- six specialist skills match Brackeys' Game Design playlist: foundations, difficulty, pacing, storytelling, combat, and visuals;
+- six design-lens skills match Brackeys' Game Design playlist: foundations, difficulty, pacing, storytelling, combat, and visuals;
+- `godot-game-development` and `blender-game-assets` translate those design decisions into concrete engine workflows;
 - a managed block is appended to the target repo's `AGENTS.md`;
 - `GAME_DESIGN.md` is created as a living record of core fantasy, design pillars, player verbs, quality budget, current hypotheses, playtest observations, durable decisions, rejected experiments, and open questions.
 

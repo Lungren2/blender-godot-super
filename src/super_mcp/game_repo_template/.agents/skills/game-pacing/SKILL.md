@@ -117,6 +117,12 @@ At meaningful milestones, play through the full current loop and check:
 - whether new systems crowd out older ones;
 - whether the ending of a session creates a useful sense of completion or curiosity.
 
+## Engine execution handoff
+
+Use `$godot-game-development` for encounter order, spawn timing, transitions, checkpoint or reward placement, mechanic activation, dialogue timing, and running the complete relevant sequence.
+
+Use `$blender-game-assets` only when the pacing diagnosis depends on source environment density, navigation landmarks, room-kit proportions, or visual transitions between spaces. Test a small assembled environment in Godot before building more assets.
+
 ## Record pacing decisions
 
 Update the "Pacing model" in `GAME_DESIGN.md` when a sequence or rhythm becomes intentional and durable.

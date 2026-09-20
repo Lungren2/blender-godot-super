@@ -129,6 +129,12 @@ Observe whether:
 
 Use computer use for feel and readability. Use MCP for exact state, scene structure, and tuning values.
 
+## Engine execution handoff
+
+Use `$godot-game-development` for runtime movement, hit and detection regions, attack state, damage timing, signals, tunable combat data, AnimationPlayer or AnimationTree control, encounter composition, camera response, effects, and actual collision ownership.
+
+Use `$blender-game-assets` for source attack poses, rigs, weapons, silhouettes, source animation, and import helpers. Validate every combat animation in Godot. Keep hit logic and runtime collision in Godot unless a stable import-helper convention has earned a place in the asset pipeline.
+
 ## Record combat rules
 
 Update `GAME_DESIGN.md` when an intention, combat rule, enemy role, or encounter principle becomes durable.

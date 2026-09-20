@@ -92,6 +92,14 @@ Run the game and observe:
 
 Use computer use for visible feedback and MCP for exact engine state.
 
+## Engine execution handoff
+
+Use `$godot-game-development` to express purpose and communication through scene ownership, node state, signals, animation, UI, audio, tunable properties, and runtime feedback. Prefer changing an existing node or behavior before adding a new system.
+
+Use `$blender-game-assets` when the communication problem depends on source silhouette, pose, proportion, material breakup, or source animation. Validate the result in Godot at the gameplay camera distance.
+
+If the issue is a gameplay rule or response rather than source asset readability, keep the change in Godot.
+
 ## Record durable rules
 
 When a principle has survived playtesting, update the relevant part of `GAME_DESIGN.md`:

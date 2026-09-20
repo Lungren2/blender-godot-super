@@ -20,11 +20,16 @@ def test_methodology_installs_skills_agents_and_design_record(tmp_path: Path) ->
     assert agents_text.startswith("# Existing project guidance\n\nKeep this.")
     assert agents_text.count("blender-godot-super:game-development:start") == 1
     assert "$game-dev-iteration" in agents_text
+    assert "$godot-game-development" in agents_text
+    assert "$blender-game-assets" in agents_text
 
     design = (tmp_path / "GAME_DESIGN.md").read_text(encoding="utf-8")
     assert "## Core fantasy" in design
     assert "## Current hypotheses" in design
     assert "## Rejected experiments and lessons" in design
+    assert "## Engine execution conventions" in design
+    assert "### Godot" in design
+    assert "### Blender and asset pipeline" in design
 
     for skill_name in SKILL_NAMES:
         skill = tmp_path / ".agents" / "skills" / skill_name / "SKILL.md"

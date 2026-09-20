@@ -111,6 +111,12 @@ Dynamic difficulty adjustment can help some games, but do not use it to hide unc
 
 If adaptive behavior is added, define what signal changes difficulty, what bounds apply, and what player experience it protects.
 
+## Engine execution handoff
+
+Use `$godot-game-development` first. Expose or reuse tuning values, adjust encounter composition, timing, spacing, recovery, telegraphs, resources, and room geometry, then run the complete encounter after each meaningful change.
+
+Use `$blender-game-assets` only when challenge readability depends on source silhouette, attack pose, animation anticipation, weapon shape, or other asset-level communication. Do not solve numerical or encounter-balance problems in Blender.
+
 ## Record the result
 
 Update `GAME_DESIGN.md` when the project establishes a durable difficulty rule, target, or learning sequence.

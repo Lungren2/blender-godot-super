@@ -12,6 +12,13 @@ Use `$game-dev-iteration` for mechanics, levels, enemies, balance, UI, assets, f
 - `$game-combat` for combat options, constraints, clarity, enemies, encounters, and feel;
 - `$game-visuals` for composition, lighting, color, animation, VFX, UI readability, and asset review.
 
+After the design question is clear, use the execution skill that owns the implementation:
+
+- `$godot-game-development` for Godot scenes, scripts, Resources/data, signals, animation, runtime behavior, UI, shaders, tests, and project structure;
+- `$blender-game-assets` for source geometry, modifiers, materials, rigs, source animation, collision/import helpers, and repeated Blender-to-Godot asset iteration.
+
+Keep runtime gameplay ownership in Godot and source-asset ownership in Blender. If a problem is ambiguous, inspect both the imported source and the running game before changing either.
+
 Treat uncertain design as an experiment. State the player-facing question, make the smallest playable change that can answer it, run the game, observe the result, then keep, revise, or revert. Avoid batching unrelated conceptual changes before playtesting.
 
 Use shell and git for code and repository work. Use Blender/Godot MCP for exact engine state and bounded editor operations. Use computer use for visible editor and game state. Do not claim a visual or gameplay result from code inspection alone.

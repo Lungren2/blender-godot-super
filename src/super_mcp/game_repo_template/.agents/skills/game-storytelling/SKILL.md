@@ -107,6 +107,12 @@ Observe:
 
 Use computer use for what is actually seen and heard. Use MCP for exact scene and state inspection.
 
+## Engine execution handoff
+
+Use `$godot-game-development` for scene state, NPC behavior, objectives, dialogue or narrative data, signals, consequences, environmental state changes, and testing the story beat in context.
+
+Use `$blender-game-assets` for architecture, props, damage states, silhouettes, and other source visuals that carry environmental story. Keep gameplay state and branching consequences in Godot rather than baking them into the source asset.
+
 ## Record durable narrative rules
 
 Update `GAME_DESIGN.md` when the project establishes a durable narrative rule, character relationship, world rule, or delivery principle.
