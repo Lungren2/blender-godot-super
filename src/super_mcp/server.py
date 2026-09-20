@@ -6,6 +6,7 @@ import importlib
 import os
 import sys
 from collections.abc import Callable
+from pathlib import Path
 from typing import cast
 
 from fastmcp import FastMCP
@@ -13,6 +14,7 @@ from fastmcp.client.transports import StdioTransport
 from fastmcp.server import create_proxy
 from mcp.server import MCPServer
 
+from super_mcp.audit import ActionAuditMiddleware
 from super_mcp.hosts.blender import BlenderBridgeClient
 from super_mcp.resources.blender import BlenderSceneReader, register_blender_resources
 
@@ -64,7 +66,12 @@ def build_godot_server() -> FastMCP:
     return create_server(config=server_config_type.from_env())
 
 
-def compose_servers(blender: FastMCP, godot: FastMCP) -> FastMCP:
+def compose_servers(
+    blender: FastMCP,
+    godot: FastMCP,
+    *,
+    audit_dir: Path | None = None,
+) -> FastMCP:
     """Expose Blender and Godot components through one MCP server."""
 
     server = FastMCP(
@@ -77,24 +84,36 @@ def compose_servers(blender: FastMCP, godot: FastMCP) -> FastMCP:
             "with blender_screenshot or blender_render. For Godot, call "
             "godot_get_server_info and godot_list_toolsets first, enable required "
             "toolsets before calling hidden tools, and prefer godot:// resources for "
-            "read-only state."
+            "read-only state. Persist changes explicitly before claiming completion."
         ),
     )
+    if audit_dir is not None:
+        server.add_middleware(ActionAuditMiddleware(audit_dir))
     server.mount(blender)
     server.mount(godot)
     return server
 
 
-def build_server() -> FastMCP:
+def build_server(*, audit_dir: Path | None = None) -> FastMCP:
     """Build the production unified MCP server from pinned upstream implementations."""
 
-    return compose_servers(build_blender_proxy(), build_godot_server())
+    resolved_audit_dir = audit_dir
+    if resolved_audit_dir is None:
+        configured = os.environ.get("SUPER_MCP_AUDIT_DIR", "").strip()
+        resolved_audit_dir = Path(configured) if configured else None
+    return compose_servers(
+        build_blender_proxy(),
+        build_godot_server(),
+        audit_dir=resolved_audit_dir,
+    )
 
 
 mcp = build_server()
 
 
 def main() -> None:
+    """Backward-compatible stdio entry point."""
+
     mcp.run()
 
 
