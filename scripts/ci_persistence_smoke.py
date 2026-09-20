@@ -354,7 +354,7 @@ async def _run(blender_bin: Path, godot_bin: Path) -> None:
     os.environ["GODOT_MCP_BRIDGE_URL"] = godot_url
     os.environ["GODOT_MCP_DEFAULT_TOOLSETS"] = ASTRA_GODOT_TOOLSETS
 
-    from super_mcp.server import build_server  # noqa: PLC0415 - env must be seeded first
+    from super_mcp.server import build_server
 
     with tempfile.TemporaryDirectory(prefix="super-persistence-") as temp:
         root = Path(temp)

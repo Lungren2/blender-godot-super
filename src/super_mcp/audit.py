@@ -260,7 +260,7 @@ class ActionAuditMiddleware(Middleware):
         }
         try:
             result = await call_next(context)
-        except Exception as exc:  # noqa: BLE001 - audit and re-raise arbitrary handler errors
+        except Exception as exc:
             record["status"] = "failed"
             record["error"] = {"type": type(exc).__name__, "message": str(exc)}
             record["duration_ms"] = round((time.perf_counter() - started) * 1000, 3)
