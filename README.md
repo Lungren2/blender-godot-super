@@ -9,7 +9,33 @@ The MVP composes two existing MIT-licensed MCP implementations instead of rebuil
 
 The parent server runs on FastMCP 4 / MCP 2026-07-28. Godot is mounted in-process so its bridge lifecycle and enabled toolsets persist across calls. Blender is proxied through its SDK-v2 stdio server. Tool names and resource URIs stay engine-specific.
 
-## Install
+## Add it to a game repo
+
+From the root of a game repository:
+
+```bash
+uvx --from git+https://github.com/Lungren2/blender-godot-super.git@main \
+  blender-godot-super-init .
+```
+
+The initializer configures the repository for Codex without cloning this project. When the initializer itself came from Git, it records the resolved commit in the generated Codex configuration so later MCP launches use the same revision.
+
+It creates or extends `.codex/config.toml`, applies the bounded tool allow-list, installs and enables the pinned Godot plug-in when a project is found, installs the pinned Blender add-on when the user add-ons directory can be detected, and ignores local `.super-mcp/` artifacts.
+
+If Blender is installed somewhere the initializer cannot detect, rerun only that part:
+
+```bash
+uvx --from git+https://github.com/Lungren2/blender-godot-super.git@main \
+  blender-godot-super-init . \
+  --skip-godot \
+  --blender-addons "/path/to/Blender/<version>/scripts/addons"
+```
+
+For a monorepo with more than one `project.godot`, pass `--godot-project path/to/game`. Use `--force` to refresh the managed Codex section and pinned editor integrations.
+
+After setup, trust the repository in Codex and run `/mcp`. Codex loads project MCP configuration from `.codex/config.toml` only for trusted projects.
+
+## Install this repository for development
 
 Install the Python environment:
 
