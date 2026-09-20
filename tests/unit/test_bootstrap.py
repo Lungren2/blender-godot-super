@@ -32,7 +32,7 @@ def test_codex_config_uses_uvx_profile_and_bounded_tools() -> None:
         "--profile",
         "astra",
     ]
-    assert server["cwd"] == ".."
+    assert server["cwd"] == "."
     assert server["required"] is True
     assert server["startup_timeout_sec"] == 60
     assert server["tool_timeout_sec"] == 180
@@ -74,6 +74,30 @@ def test_codex_config_refuses_manual_section_without_force(tmp_path: Path) -> No
     )
     parsed = tomllib.loads(config.read_text(encoding="utf-8"))
     assert parsed["mcp_servers"]["blender-godot-super"]["command"] == "uvx"
+
+
+def test_codex_config_detects_quoted_existing_server_table(tmp_path: Path) -> None:
+    config = tmp_path / ".codex" / "config.toml"
+    config.parent.mkdir()
+    config.write_text(
+        '[mcp_servers."blender-godot-super"]\n'
+        'command = "custom"\n\n'
+        '[mcp_servers.other]\n'
+        'command = "other"\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(FileExistsError):
+        write_codex_config(tmp_path, "blender-godot-super==1.2.3")
+
+    write_codex_config(
+        tmp_path,
+        "blender-godot-super==1.2.3",
+        force=True,
+    )
+    parsed = tomllib.loads(config.read_text(encoding="utf-8"))
+    assert parsed["mcp_servers"]["blender-godot-super"]["command"] == "uvx"
+    assert parsed["mcp_servers"]["other"]["command"] == "other"
 
 
 def test_gitignore_is_idempotent(tmp_path: Path) -> None:
