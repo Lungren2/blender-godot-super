@@ -71,7 +71,7 @@ def render_codex_config_section(package_source: str) -> str:
         f"  {_toml_string('--profile')},",
         f"  {_toml_string('astra')},",
         "]",
-        'cwd = ".."',
+        'cwd = "."',
         "required = true",
         "startup_timeout_sec = 60",
         "tool_timeout_sec = 180",
@@ -82,15 +82,30 @@ def render_codex_config_section(package_source: str) -> str:
     return "\n".join(lines)
 
 
+def _table_header(line: str) -> str:
+    return line.split("#", 1)[0].strip()
+
+
+def _is_target_section_header(line: str) -> bool:
+    header = _table_header(line)
+    return header in {
+        f"[mcp_servers.{MCP_SERVER_ID}]",
+        f'[mcp_servers."{MCP_SERVER_ID}"]',
+        f"[mcp_servers.'{MCP_SERVER_ID}']",
+    }
+
+
 def _section_bounds(lines: list[str]) -> tuple[int, int] | None:
-    header = f"[mcp_servers.{MCP_SERVER_ID}]"
-    start = next((index for index, line in enumerate(lines) if line.strip() == header), None)
+    start = next(
+        (index for index, line in enumerate(lines) if _is_target_section_header(line)),
+        None,
+    )
     if start is None:
         return None
     end = len(lines)
     for index in range(start + 1, len(lines)):
-        stripped = lines[index].strip()
-        if stripped.startswith("[") and stripped.endswith("]"):
+        header = _table_header(lines[index])
+        if header.startswith("[") and header.endswith("]"):
             end = index
             break
     if start > 0 and lines[start - 1].strip() == _MANAGED_COMMENT:
