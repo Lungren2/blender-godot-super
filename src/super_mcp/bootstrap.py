@@ -355,6 +355,7 @@ def main() -> None:
         print(f"Ensured local artifacts are ignored: {gitignore}")
 
     if not args.skip_godot:
+        godot_project: Path | None
         if args.godot_project is not None:
             godot_project = _resolve_relative(project_root, args.godot_project)
         else:
@@ -373,6 +374,7 @@ def main() -> None:
                 print(f"Enabled Godot MCP plug-in in {project_file}")
 
     if not args.skip_blender:
+        blender_addons: Path | None
         if args.blender_addons is not None:
             blender_addons = _resolve_relative(project_root, args.blender_addons)
         else:
